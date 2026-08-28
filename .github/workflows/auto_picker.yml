@@ -2,8 +2,8 @@ name: Honest Degen Kalshi Auto Picker
 
 on:
   schedule:
-    # Run every 30 minutes between 13:00 UTC (9 AM ET) and 04:00 UTC (12 AM ET)
-    - cron: '*/30 13-23,0-4 * * *'
+    # Run every 15 minutes 24/7 (100% free on public repositories)
+    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
