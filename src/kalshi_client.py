@@ -260,6 +260,16 @@ class KalshiClient:
         side_clean = side.lower()
         price_dollars = f"{price_cents / 100.0:.4f}"
 
+        tif_map = {
+            "gtc": "good_till_canceled",
+            "ioc": "immediate_or_cancel",
+            "fok": "fill_or_kill",
+            "good_till_canceled": "good_till_canceled",
+            "immediate_or_cancel": "immediate_or_cancel",
+            "fill_or_kill": "fill_or_kill"
+        }
+        tif_val = tif_map.get(time_in_force.lower(), "good_till_canceled")
+
         payload = {
             "ticker": ticker,
             "client_order_id": client_oid,
@@ -268,7 +278,9 @@ class KalshiClient:
             "count_fp": count_fp,
             "price_dollars": price_dollars,
             "yes_price": price_cents if side_clean == "yes" else (100 - price_cents),
-            "time_in_force": time_in_force,
+            "no_price": (100 - price_cents) if side_clean == "yes" else price_cents,
+            "time_in_force": tif_val,
+            "self_trade_prevention_type": "taker_at_cross",
             "type": "limit"
         }
 
