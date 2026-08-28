@@ -1,0 +1,5 @@
+{
+  "unit_size_dollars": 0.50,
+  "price_slippage_tolerance_cents": 10,
+  "allow_fractional_contracts": true
+}
