@@ -177,12 +177,15 @@ class MarketMatcher:
         # Determine target category/keywords
         is_nrfi = "nrfi" in market_lower or "nrfi" in play_lower or "first inning" in market_lower
         is_f5 = "f5" in market_lower or "f5" in play_lower or "first 5" in market_lower
-        is_ml = "moneyline" in market_lower or "ml" in market_lower or "side" in market_lower
-        is_total = "total" in market_lower or "over" in play_lower or "under" in play_lower
+        is_f3 = "f3" in market_lower or "f3" in play_lower or "first 3" in market_lower or "first 3" in play_lower
+        is_spread = "spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower
+        is_ml = "moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower
+        is_total = "total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower
+        is_explicit_no = play_lower.startswith("no ") or play_lower.startswith("no ·") or "to win: no" in play_lower
 
         # Search through live events for best match
         best_market = None
-        best_side = "yes"
+        best_side = "no" if is_explicit_no else "yes"
         best_event = None
 
         for event in live_events:
@@ -192,7 +195,7 @@ class MarketMatcher:
 
             # Filter by sport keyword in ticker or title if present
             sport_keywords = {
-                "MLB": ["mlb", "baseball", "nrfi", "f5", "rbi", "home run", "strikeout", "run line"],
+                "MLB": ["mlb", "baseball", "nrfi", "f5", "f3", "rbi", "home run", "strikeout", "run line"],
                 "NBA": ["nba", "basketball"],
                 "WNBA": ["wnba", "basketball"],
                 "NHL": ["nhl", "hockey"],
@@ -234,11 +237,38 @@ class MarketMatcher:
                         best_event = event
                         break
 
-                # Handle F5
+                # Handle F3 (First 3 Innings)
+                elif is_f3:
+                    if "first 3" in m_title or "f3" in m_title or "3 innings" in m_title:
+                        best_market = mkt
+                        best_side = "no" if is_explicit_no else "yes"
+                        best_event = event
+                        break
+
+                # Handle F5 (First 5 Innings)
                 elif is_f5:
                     if "first 5" in m_title or "f5" in m_title or "5 innings" in m_title:
                         best_market = mkt
-                        best_side = "yes"
+                        best_side = "no" if is_explicit_no else "yes"
+                        best_event = event
+                        break
+
+                # Handle Spreads / Margin
+                elif is_spread:
+                    if "spread" in m_title or "run line" in m_title or "margin" in m_title or "by over" in m_title:
+                        best_market = mkt
+                        best_side = "no" if is_explicit_no else "yes"
+                        best_event = event
+                        break
+
+                # Handle Over / Under Totals
+                elif is_total:
+                    if "total" in m_title or "over" in m_title or "under" in m_title or "points" in m_title or "runs" in m_title:
+                        if is_explicit_no:
+                            best_side = "no"
+                        else:
+                            best_side = "yes" if "over" in play_lower else "no"
+                        best_market = mkt
                         best_event = event
                         break
 
@@ -246,15 +276,7 @@ class MarketMatcher:
                 elif is_ml:
                     if any(t.lower() in m_title for t in teams_extracted + norm_teams) or "winner" in m_title or "win" in m_title:
                         best_market = mkt
-                        best_side = "yes"
-                        best_event = event
-                        break
-
-                # Handle Over / Under Totals
-                elif is_total:
-                    if "total" in m_title or "over" in m_title or "under" in m_title:
-                        best_side = "yes" if "over" in play_lower else "no"
-                        best_market = mkt
+                        best_side = "no" if is_explicit_no else "yes"
                         best_event = event
                         break
 

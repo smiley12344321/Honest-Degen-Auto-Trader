@@ -164,10 +164,29 @@ def parse_picks_from_csv(csv_text: str) -> List[PickRecord]:
     return records
 
 
-def get_active_picks(url: str = SHEET_CSV_URL) -> List[PickRecord]:
+def get_active_picks(url: str = SHEET_CSV_URL, max_age_days: int = 3) -> List[PickRecord]:
     """
-    Convenience function: fetches CSV and returns only active/pending picks.
+    Convenience function: fetches CSV and returns only active/pending picks
+    from the current or recent slate (within max_age_days of the latest entry).
     """
     csv_text = fetch_sheet_csv(url)
     all_picks = parse_picks_from_csv(csv_text)
-    return [pick for pick in all_picks if pick.is_active]
+    active_unfiltered = [pick for pick in all_picks if pick.is_active]
+    
+    if not active_unfiltered:
+        return []
+
+    # Find the most recent day number / date to prevent stale 'pending' rows from months ago
+    def extract_day_num(p: PickRecord) -> int:
+        try:
+            return int(re.search(r"\d+", p.day).group(0))
+        except Exception:
+            return 0
+
+    max_day = max((extract_day_num(p) for p in all_picks if p.day), default=0)
+    
+    if max_day > 0:
+        # Only return active picks within max_age_days of the latest day in the sheet
+        return [p for p in active_unfiltered if (max_day - extract_day_num(p)) <= max_age_days]
+
+    return active_unfiltered
