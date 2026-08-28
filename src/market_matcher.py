@@ -308,6 +308,7 @@ class MarketMatcher:
 
             # 3. Handle Over / Under Totals
             elif is_total:
+                is_under_bet = is_explicit_no or "under" in play_lower or "under" in market_lower
                 candidate_markets = []
                 for mkt in markets:
                     m_title = mkt.get("title", "").lower()
@@ -318,16 +319,26 @@ class MarketMatcher:
                         candidate_markets.append((mkt, m_num))
 
                 if candidate_markets:
-                    if target_number is not None:
-                        best_tuple = min(candidate_markets, key=lambda x: abs((x[1] or 0) - target_number))
-                        best_market = best_tuple[0]
+                    valid_candidates = [c for c in candidate_markets if c[1] is not None]
+                    if valid_candidates and target_number is not None:
+                        if is_under_bet:
+                            # For UNDER: lean to safer side (prefer lines >= target_number - 0.5, e.g. 178.5 or 177.5 instead of 175.5)
+                            safe_pool = [c for c in valid_candidates if c[1] >= (target_number - 0.5)]
+                            if safe_pool:
+                                best_market = min(safe_pool, key=lambda x: x[1])[0]
+                            else:
+                                best_market = min(valid_candidates, key=lambda x: abs(x[1] - target_number))[0]
+                        else:
+                            # For OVER: lean to safer side (prefer lines <= target_number + 0.5, e.g. 22.5 instead of 24.5)
+                            safe_pool = [c for c in valid_candidates if c[1] <= (target_number + 0.5)]
+                            if safe_pool:
+                                best_market = max(safe_pool, key=lambda x: x[1])[0]
+                            else:
+                                best_market = min(valid_candidates, key=lambda x: abs(x[1] - target_number))[0]
                     else:
                         best_market = candidate_markets[0][0]
 
-                    if is_explicit_no or "under" in play_lower or "under" in market_lower:
-                        best_side = "no"
-                    else:
-                        best_side = "yes"
+                    best_side = "no" if is_under_bet else "yes"
                     best_event = event
                     break
 

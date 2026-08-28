@@ -138,3 +138,28 @@ class TestMarketMatcher:
         assert len(res.combo_legs) == 2
         assert res.combo_legs[0]["market_ticker"] == "KXTENNIS-24AUG24-BRUNOLD-WIN"
         assert res.combo_legs[1]["market_ticker"] == "KXTENNIS-24AUG24-GULIN-WIN"
+
+    def test_safe_side_totals_proximity(self, matcher):
+        mock_totals_events = [
+            {
+                "event_ticker": "KXWNBATOTAL-26AUG28TORLV",
+                "title": "Toronto vs Las Vegas: Point Total",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXWNBATOTAL-26AUG28TORLV-175", "title": "Over 175.5 points scored", "yes_ask": 50},
+                    {"ticker": "KXWNBATOTAL-26AUG28TORLV-178", "title": "Over 178.5 points scored", "yes_ask": 40},
+                ]
+            }
+        ]
+
+        # Under 177: should pick 178.5 (safer side) rather than 175.5
+        pick_under = PickRecord(
+            day="116", date="8/28/2026", sport="WNBA", play="Toronto Tempo/Las Vegas Aces Under 177",
+            market="Game Total", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="B+", units=1.5, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="test_under"
+        )
+        res_under = matcher.match_pick(pick_under, live_events=mock_totals_events)
+        assert res_under.matched is True
+        assert res_under.ticker == "KXWNBATOTAL-26AUG28TORLV-178"
+        assert res_under.side == "no"
