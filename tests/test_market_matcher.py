@@ -86,14 +86,55 @@ class TestMarketMatcher:
         assert res.ticker == "KXNRFI-24AUG24-PHI-SEA-SCORELESS"
         assert res.side == "yes"
 
-    def test_skip_parlays(self, matcher):
+    def test_extract_parlay_legs(self, matcher):
+        legs1 = matcher.extract_parlay_legs("Gauff +3.5 / Tiafoe +4.5")
+        assert len(legs1) == 2
+        assert legs1[0] == "Gauff +3.5"
+        assert legs1[1] == "Tiafoe +4.5"
+
+        legs2 = matcher.extract_parlay_legs("Brunold ML / Gulin ML")
+        assert len(legs2) == 2
+        assert legs2[0] == "Brunold ML"
+        assert legs2[1] == "Gulin ML"
+
+    def test_match_parlays_multi_leg(self, matcher):
+        # Mock events containing both legs
+        mock_tennis_events = [
+            {
+                "event_ticker": "KXTENNIS-24AUG24-BRUNOLD",
+                "title": "Brunold vs Opponent",
+                "category": "sports",
+                "markets": [
+                    {
+                        "ticker": "KXTENNIS-24AUG24-BRUNOLD-WIN",
+                        "title": "Brunold to win",
+                        "yes_ask": 55
+                    }
+                ]
+            },
+            {
+                "event_ticker": "KXTENNIS-24AUG24-GULIN",
+                "title": "Gulin vs Opponent",
+                "category": "sports",
+                "markets": [
+                    {
+                        "ticker": "KXTENNIS-24AUG24-GULIN-WIN",
+                        "title": "Gulin to win",
+                        "yes_ask": 58
+                    }
+                ]
+            }
+        ]
+
         pick = PickRecord(
-            day="111", date="8/23/2026", sport="Tennis", play="10-Leg Royal Sweep",
-            market="Parlay", odds_raw="1514", odds_numeric=1514.0,
-            implied_cents=6, grade="A", units=0.5, risk_dollars_sheet=None,
-            result="pending", notes="", trade_id="test3"
+            day="112", date="8/24/2026", sport="Tennis", play="Brunold ML / Gulin ML",
+            market="Parlay", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=2.5, risk_dollars_sheet=None,
+            result="pending", notes="Brunold clay & Gulin clay", trade_id="test_parlay"
         )
-        res = matcher.match_pick(pick, live_events=[])
-        assert res.matched is False
-        assert res.unsupported is True
-        assert "Parlay" in res.reason
+        res = matcher.match_pick(pick, live_events=mock_tennis_events)
+        assert res.matched is True
+        assert res.is_combo is True
+        assert len(res.combo_legs) == 2
+        assert res.combo_legs[0]["market_ticker"] == "KXTENNIS-24AUG24-BRUNOLD-WIN"
+        assert res.combo_legs[1]["market_ticker"] == "KXTENNIS-24AUG24-GULIN-WIN"

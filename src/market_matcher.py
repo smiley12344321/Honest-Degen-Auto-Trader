@@ -18,6 +18,8 @@ class MatchResult:
     market_title: Optional[str] = None
     reason: Optional[str] = None
     unsupported: bool = False
+    is_combo: bool = False
+    combo_legs: Optional[List[Dict[str, str]]] = None
 
 
 class MarketMatcher:
@@ -58,11 +60,6 @@ class MarketMatcher:
     def extract_teams_from_play(self, play: str, sport: str) -> List[str]:
         """
         Extracts team names or abbreviations from a play string.
-        Examples:
-          - 'Rays ML' -> ['Rays']
-          - 'Phillies/Mariners NRFI' -> ['Phillies', 'Mariners']
-          - 'Angels vs Rangers' -> ['Angels', 'Rangers']
-          - 'Ugo Humbert vs Zizou Bergs Over 23' -> ['Ugo Humbert', 'Zizou Bergs']
         """
         clean_play = re.sub(r"\b(ML|F5|NRFI|YRFI|Over|Under|Spread|Run Line|Total|Sets?|Games?)\b.*", "", play, flags=re.IGNORECASE).strip()
         
@@ -72,18 +69,96 @@ class MarketMatcher:
         teams = [p.strip() for p in parts if p.strip()]
         return teams
 
+    def extract_parlay_legs(self, play: str, notes: str = "") -> List[str]:
+        """
+        Extracts individual legs from a parlay play description or notes.
+        Examples:
+          - 'Gauff +3.5 / Tiafoe +4.5' -> ['Gauff +3.5', 'Tiafoe +4.5']
+          - 'Brunold ML / Gulin ML' -> ['Brunold ML', 'Gulin ML']
+        """
+        # First check play string for slashes or ' & '
+        if "/" in play and not any(k in play.lower() for k in ["under", "over", "nrfi"]):
+            return [p.strip() for p in play.split("/") if p.strip()]
+        if "&" in play:
+            return [p.strip() for p in play.split("&") if p.strip()]
+        
+        # If play is generic like '10-Leg Royal Sweep', inspect notes for player names/legs
+        if notes:
+            # Look for lines or bullet points in notes
+            note_lines = [l.strip() for l in re.split(r"[;\n,]+", notes) if len(l.strip()) > 3]
+            if len(note_lines) >= 2:
+                return note_lines
+
+        return [play.strip()]
+
     def match_pick(self, pick: PickRecord, live_events: Optional[List[Dict[str, Any]]] = None) -> MatchResult:
         """
-        Resolves a PickRecord to an active Kalshi market ticker and contract side.
+        Resolves a PickRecord to an active Kalshi market ticker or combo market legs.
         """
-        # 1. Check for parlays (unsupported on Kalshi as single contracts)
-        if "parlay" in pick.market.lower() or "parlay" in pick.play.lower() or "sweep" in pick.play.lower():
-            return MatchResult(
-                matched=False,
-                unsupported=True,
-                reason="Multi-leg Parlays cannot be placed as a single contract on Kalshi."
-            )
+        # Fetch relevant open events from Kalshi if not supplied
+        if live_events is None:
+            try:
+                live_events = self.client.get_events(status="open")
+            except Exception as e:
+                return MatchResult(matched=False, reason=f"Failed to query Kalshi events: {e}")
 
+        # Check for Parlays / Multi-Leg Combos
+        is_parlay = "parlay" in pick.market.lower() or "parlay" in pick.play.lower() or "sweep" in pick.play.lower()
+        if is_parlay:
+            legs = self.extract_parlay_legs(pick.play, pick.notes)
+            resolved_legs = []
+            
+            for leg_str in legs:
+                # Sub-match each leg
+                sub_pick = PickRecord(
+                    day=pick.day,
+                    date=pick.date,
+                    sport=pick.sport,
+                    play=leg_str,
+                    market="Side / ML" if "ml" in leg_str.lower() else pick.market,
+                    odds_raw="",
+                    odds_numeric=None,
+                    implied_cents=None,
+                    grade=pick.grade,
+                    units=pick.units,
+                    risk_dollars_sheet=None,
+                    result="pending",
+                    notes="",
+                    trade_id=f"{pick.trade_id}_leg"
+                )
+                sub_match = self._match_single_pick(sub_pick, live_events)
+                if sub_match.matched and sub_match.ticker:
+                    resolved_legs.append({
+                        "market_ticker": sub_match.ticker,
+                        "event_ticker": sub_match.event_ticker or ""
+                    })
+            
+            # If at least 2 legs are resolved (or in dry run / simulation mode where mock events are used)
+            if len(resolved_legs) >= 2:
+                return MatchResult(
+                    matched=True,
+                    is_combo=True,
+                    combo_legs=resolved_legs,
+                    market_title=f"Parlay: {pick.play} ({len(resolved_legs)} legs)"
+                )
+            elif len(legs) >= 2:
+                # Parlay detected but specific legs could not all be matched in current open events
+                return MatchResult(
+                    matched=False,
+                    is_combo=True,
+                    reason=f"Parlay '{pick.play}' has {len(legs)} legs, but active Kalshi markets were not found for all legs."
+                )
+            else:
+                return MatchResult(
+                    matched=False,
+                    unsupported=True,
+                    is_combo=True,
+                    reason=f"Could not parse individual legs for parlay '{pick.play}'."
+                )
+
+        return self._match_single_pick(pick, live_events)
+
+    def _match_single_pick(self, pick: PickRecord, live_events: List[Dict[str, Any]]) -> MatchResult:
         sport_upper = pick.sport.upper()
         market_lower = pick.market.lower()
         play_lower = pick.play.lower()

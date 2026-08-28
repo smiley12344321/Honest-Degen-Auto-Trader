@@ -78,3 +78,32 @@ class TestKalshiClient:
         assert order["count_fp"] == "1.32"
         assert order["price_cents"] == 57
         assert order["simulated"] is True
+
+    def test_dry_run_combo_rfq_workflow(self):
+        client = KalshiClient()  # Unauthenticated
+        
+        # 1. Create combo market
+        selected_markets = [
+            {"market_ticker": "KXTENNIS-1", "event_ticker": "EVENT-1"},
+            {"market_ticker": "KXTENNIS-2", "event_ticker": "EVENT-2"}
+        ]
+        combo_res = client.create_or_get_combo_market("KXSPORTSCOMBO", selected_markets, dry_run=True)
+        assert combo_res["simulated"] is True
+        combo_ticker = combo_res["ticker"]
+
+        # 2. Create RFQ
+        rfq_res = client.create_rfq(combo_ticker, target_cost_dollars=1.00, dry_run=True)
+        assert rfq_res["simulated"] is True
+        rfq_id = rfq_res["rfq_id"]
+
+        # 3. Get Quotes
+        quotes = client.get_rfq_quotes(rfq_id, dry_run=True)
+        assert len(quotes) >= 1
+        quote_id = quotes[0]["quote_id"]
+
+        # 4. Accept & Confirm
+        acc = client.accept_quote(rfq_id, quote_id, dry_run=True)
+        assert acc["status"] == "accepted"
+
+        conf = client.confirm_quote(rfq_id, quote_id, dry_run=True)
+        assert conf["status"] == "confirmed"
