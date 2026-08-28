@@ -89,12 +89,12 @@ class Trader:
 
         print(f"[Trader] Found {len(active_picks)} active picks to evaluate.")
 
-        # Fetch open Kalshi events if not passed
+        # Fetch open sports events from Kalshi if not passed
         if live_events is None:
             try:
-                live_events = self.client.get_events(status="open")
+                live_events = self.client.get_sports_events(status="open")
             except Exception as e:
-                print(f"[Trader] Notice: Could not fetch Kalshi events (offline or API issue): {e}")
+                print(f"[Trader] Notice: Could not fetch Kalshi sports events (offline or API issue): {e}")
                 live_events = []
 
         for pick in active_picks:
@@ -216,12 +216,12 @@ class Trader:
                         mode="simulated" if dry_run or not self.client.is_authenticated else KALSHI_ENV
                     )
                     placed_count += 1
-                    print(f"[Trader] ✅ Successfully placed parlay combo: {pick.play} ({final_sizing['count_fp']} contracts @ {quote_price_cents}¢)")
+                    print(f"[Trader] [SUCCESS] Placed parlay combo: {pick.play} ({final_sizing['count_fp']} contracts @ {quote_price_cents}c)")
                     continue
 
                 except Exception as e:
                     err_msg = f"Parlay RFQ execution failed for {pick.play}: {e}"
-                    print(f"[Trader] ❌ {err_msg}")
+                    print(f"[Trader] [ERROR] {err_msg}")
                     self.notifier.notify_error("Parlay RFQ Error", err_msg)
                     error_count += 1
                     continue
@@ -233,7 +233,7 @@ class Trader:
             # If no live orderbook price returned, fallback to target cents from sheet odds
             if ask_cents is None:
                 ask_cents = pick.implied_cents or 50
-                print(f"[Trader] No live ask depth found; using sheet target price {ask_cents}¢.")
+                print(f"[Trader] No live ask depth found; using sheet target price {ask_cents}c.")
 
             if pick.odds_numeric is not None:
                 is_acceptable, target_cents, max_buy_cents, delta = is_price_acceptable(
@@ -243,8 +243,8 @@ class Trader:
                 )
                 if not is_acceptable:
                     print(
-                        f"[Trader] Price rejected for {pick.play}: Ask is {ask_cents}¢ "
-                        f"(Target: {target_cents}¢, Max Allowed: {max_buy_cents}¢, Delta: +{delta}¢)"
+                        f"[Trader] Price rejected for {pick.play}: Ask is {ask_cents}c "
+                        f"(Target: {target_cents}c, Max Allowed: {max_buy_cents}c, Delta: +{delta}c)"
                     )
                     self.notifier.notify_trade_skipped_price(pick, target_cents, ask_cents, max_buy_cents)
                     skipped_count += 1
@@ -301,11 +301,11 @@ class Trader:
                     mode="simulated" if dry_run or not self.client.is_authenticated else KALSHI_ENV
                 )
                 placed_count += 1
-                print(f"[Trader] ✅ Successfully placed trade: {pick.play} ({sizing['count_fp']} contracts @ {ask_cents}¢)")
+                print(f"[Trader] [SUCCESS] Placed trade: {pick.play} ({sizing['count_fp']} contracts @ {ask_cents}c)")
 
             except Exception as e:
                 err_msg = f"Order placement failed for {pick.play} on ticker {ticker}: {e}"
-                print(f"[Trader] ❌ {err_msg}")
+                print(f"[Trader] [ERROR] {err_msg}")
                 self.notifier.notify_error("Order Placement Error", err_msg)
                 error_count += 1
 

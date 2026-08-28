@@ -21,7 +21,7 @@ def main():
         "--slippage",
         type=int,
         default=None,
-        help=f"Override max slippage tolerance in cents (default from settings: {PRICE_SLIPPAGE_TOLERANCE_CENTS}¢)"
+        help=f"Override max slippage tolerance in cents (default from settings: {PRICE_SLIPPAGE_TOLERANCE_CENTS}c)"
     )
     args = parser.parse_args()
 
@@ -33,7 +33,7 @@ def main():
     print("==========================================================")
     print(f"Environment         : {KALSHI_ENV.upper()}")
     print(f"Unit Size           : ${effective_unit_size:.2f} per unit")
-    print(f"Slippage Tolerance  : {effective_slippage}¢")
+    print(f"Slippage Tolerance  : {effective_slippage}c")
     print(f"Dry Run Mode        : {'ENABLED' if args.dry_run else 'DISABLED'}")
     print("==========================================================\n")
 

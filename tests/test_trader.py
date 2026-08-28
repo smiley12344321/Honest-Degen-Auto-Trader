@@ -36,8 +36,21 @@ class TestTrader:
         
         trader = Trader(kalshi_client=client, notifier=notifier, state_file=state_file)
         
-        # Test run with dry_run
-        summary = trader.run_cycle(dry_run=True)
+        # Test run with dry_run and mock events
+        mock_events = [
+            {
+                "event_ticker": "KXMLBGAME-26AUG28-MIA-WSH",
+                "title": "Miami vs Washington",
+                "markets": [
+                    {
+                        "ticker": "KXMLBGAME-26AUG28-MIA-WSH-MIA",
+                        "title": "Miami wins",
+                        "yes_ask": 55
+                    }
+                ]
+            }
+        ]
+        summary = trader.run_cycle(dry_run=True, live_events=mock_events)
         assert isinstance(summary, dict)
         assert "placed" in summary
         assert "skipped" in summary

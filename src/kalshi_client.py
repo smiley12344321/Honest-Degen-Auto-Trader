@@ -159,6 +159,27 @@ class KalshiClient:
         res = self._request("GET", "/events", params=params)
         return res.get("events", [])
 
+    def get_sports_events(self, status: str = "open") -> List[Dict[str, Any]]:
+        """
+        Retrieves active events and markets across all sports series.
+        """
+        sports_series_list = [
+            "KXMLBGAME", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLB1INNING", "KXNRFI", "KXMLB",
+            "KXWNBAGAME", "KXWNBATOTAL", "KXWNBASPREAD", "KXWNBA1HTOTAL", "KXWNBA1HSPREAD",
+            "KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES",
+            "KXNCAAFGAME", "KXNCAAFSPREAD", "KXNCAAFTOTAL", "KXNFLGAME", "KXNFLSPREAD", "KXNFLTOTAL",
+            "KXNBAGAME", "KXNHLGAME", "KXEPLGAME"
+        ]
+        all_events = []
+        for st in sports_series_list:
+            try:
+                evs = self.get_events(series_ticker=st, status=status, with_nested_markets=True)
+                if evs:
+                    all_events.extend(evs)
+            except Exception:
+                pass
+        return all_events
+
     def get_market(self, ticker: str) -> Dict[str, Any]:
         """
         Retrieves market details for a single market ticker.

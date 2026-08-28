@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 from dataclasses import dataclass
@@ -188,7 +189,54 @@ class MarketMatcher:
         best_side = "no" if is_explicit_no else "yes"
         best_event = None
 
-        for event in live_events:
+        # Determine target team code/name for side-specific markets
+        primary_team = norm_teams[0] if norm_teams else ""
+        primary_raw = teams_extracted[0] if teams_extracted else ""
+
+        # Extract numerical total/spread line if present (e.g. 177, 3.5, 23.5)
+        num_match = re.search(r"\b(\d+(?:\.\d+)?)\b", pick.play)
+        target_number = float(num_match.group(1)) if num_match else None
+
+        # Filter and score live events for relevance
+        date_code = ""
+        try:
+            parts = [int(p) for p in pick.date.split("/") if p.isdigit()]
+            if len(parts) >= 2:
+                m, d = parts[0], parts[1]
+                y = parts[2] if len(parts) >= 3 else 2026
+                dt = datetime.date(y, m, d)
+                date_code = f"{dt.strftime('%y')}{dt.strftime('%b').upper()}{d:02d}"
+        except Exception:
+            pass
+
+        def score_event(ev: Dict[str, Any]) -> int:
+            score = 0
+            et = ev.get("event_ticker", "").upper()
+            title = ev.get("title", "").lower()
+            
+            # Date bonus
+            if date_code and date_code in et:
+                score += 100
+            
+            # Series category match bonus
+            if is_f5 and ("F5" in et or "first 5" in title):
+                score += 50
+            elif is_f3 and ("F3" in et or "first 3" in title):
+                score += 50
+            elif is_nrfi and ("NRFI" in et or "1INNING" in et or "first inning" in title):
+                score += 50
+            elif is_total and ("TOTAL" in et or "total" in title):
+                score += 50
+            elif is_spread and ("SPREAD" in et or "spread" in title or "margin" in title):
+                score += 50
+            elif is_ml and ("GAME" in et or "MATCH" in et):
+                score += 30
+
+            return score
+
+        sorted_events = sorted(live_events, key=score_event, reverse=True)
+
+        for event in sorted_events:
             event_title = event.get("title", "").lower()
             event_ticker = event.get("event_ticker", "").lower()
             sub_title = event.get("sub_title", "").lower()
@@ -199,11 +247,11 @@ class MarketMatcher:
                 "NBA": ["nba", "basketball"],
                 "WNBA": ["wnba", "basketball"],
                 "NHL": ["nhl", "hockey"],
-                "TENNIS": ["tennis", "atp", "wta", "us open", "wimbledon", "french open", "australian open"]
+                "TENNIS": ["tennis", "atp", "wta", "us open", "wimbledon", "french open", "australian open"],
+                "NCAAF": ["ncaaf", "college football", "football"]
             }
             keywords = sport_keywords.get(sport_upper, [])
             if keywords and not any(k in event_ticker or k in event_title for k in keywords):
-                # If no sport keyword matches, only allow if at least one normalized team code is in event_ticker
                 if not any(t.lower() in event_ticker or t.lower() in event_title for t in norm_teams if len(t) >= 2):
                     continue
 
@@ -219,16 +267,12 @@ class MarketMatcher:
 
             # Check child markets in event
             markets = event.get("markets", [])
-            for mkt in markets:
-                m_title = mkt.get("title", "").lower()
-                m_ticker = mkt.get("ticker", "")
-                m_subtitle = mkt.get("subtitle", "").lower()
-
-                # Handle NRFI
-                if is_nrfi:
+            
+            # 1. Handle NRFI
+            if is_nrfi:
+                for mkt in markets:
+                    m_title = mkt.get("title", "").lower()
                     if "first inning" in m_title or "1st inning" in m_title or "nrfi" in m_title or "run" in m_title:
-                        # On Kalshi: "Will there be a run in the 1st inning?" -> NRFI is buying 'No'
-                        # "Will the 1st inning be scoreless?" -> NRFI is buying 'Yes'
                         if "scoreless" in m_title or "no run" in m_title:
                             best_side = "yes"
                         else:
@@ -237,48 +281,70 @@ class MarketMatcher:
                         best_event = event
                         break
 
-                # Handle F3 (First 3 Innings)
-                elif is_f3:
-                    if "first 3" in m_title or "f3" in m_title or "3 innings" in m_title:
+            # 2. Handle F3, F5, F7, and Moneyline
+            elif is_f3 or is_f5 or is_ml:
+                # Find the market matching the primary target team
+                for mkt in markets:
+                    m_title = mkt.get("title", "").lower()
+                    m_ticker = mkt.get("ticker", "").upper()
+                    m_suffix = m_ticker.split("-")[-1]
+
+                    # Skip ties unless explicitly requested
+                    if "tie" in m_title or m_suffix == "TIE":
+                        continue
+
+                    # Exact team code suffix match or team name in title
+                    team_match = False
+                    if primary_team and (m_suffix == primary_team.upper() or primary_team.lower() in m_title):
+                        team_match = True
+                    elif primary_raw and (primary_raw.lower() in m_title or m_suffix == primary_raw.upper()):
+                        team_match = True
+
+                    if team_match:
                         best_market = mkt
                         best_side = "no" if is_explicit_no else "yes"
                         best_event = event
                         break
 
-                # Handle F5 (First 5 Innings)
-                elif is_f5:
-                    if "first 5" in m_title or "f5" in m_title or "5 innings" in m_title:
+            # 3. Handle Over / Under Totals
+            elif is_total:
+                candidate_markets = []
+                for mkt in markets:
+                    m_title = mkt.get("title", "").lower()
+                    m_ticker = mkt.get("ticker", "")
+                    if "total" in m_title or "over" in m_title or "under" in m_title or "points" in m_title or "runs" in m_title or "games" in m_title:
+                        m_num_match = re.search(r"\b(\d+(?:\.\d+)?)\b", m_title) or re.search(r"-(\d+)$", m_ticker)
+                        m_num = float(m_num_match.group(1)) if m_num_match else None
+                        candidate_markets.append((mkt, m_num))
+
+                if candidate_markets:
+                    if target_number is not None:
+                        best_tuple = min(candidate_markets, key=lambda x: abs((x[1] or 0) - target_number))
+                        best_market = best_tuple[0]
+                    else:
+                        best_market = candidate_markets[0][0]
+
+                    if is_explicit_no or "under" in play_lower or "under" in market_lower:
+                        best_side = "no"
+                    else:
+                        best_side = "yes"
+                    best_event = event
+                    break
+
+            # 4. Handle Spreads / Margin
+            elif is_spread:
+                for mkt in markets:
+                    m_title = mkt.get("title", "").lower()
+                    m_ticker = mkt.get("ticker", "").upper()
+                    m_suffix = m_ticker.split("-")[-1]
+                    if primary_team and (m_suffix.startswith(primary_team.upper()) or primary_team.lower() in m_title):
                         best_market = mkt
                         best_side = "no" if is_explicit_no else "yes"
                         best_event = event
                         break
 
-                # Handle Spreads / Margin
-                elif is_spread:
-                    if "spread" in m_title or "run line" in m_title or "margin" in m_title or "by over" in m_title:
-                        best_market = mkt
-                        best_side = "no" if is_explicit_no else "yes"
-                        best_event = event
-                        break
-
-                # Handle Over / Under Totals
-                elif is_total:
-                    if "total" in m_title or "over" in m_title or "under" in m_title or "points" in m_title or "runs" in m_title:
-                        if is_explicit_no:
-                            best_side = "no"
-                        else:
-                            best_side = "yes" if "over" in play_lower else "no"
-                        best_market = mkt
-                        best_event = event
-                        break
-
-                # Handle Moneyline / Winner
-                elif is_ml:
-                    if any(t.lower() in m_title for t in teams_extracted + norm_teams) or "winner" in m_title or "win" in m_title:
-                        best_market = mkt
-                        best_side = "no" if is_explicit_no else "yes"
-                        best_event = event
-                        break
+            if best_market:
+                break
 
             if best_market:
                 break
