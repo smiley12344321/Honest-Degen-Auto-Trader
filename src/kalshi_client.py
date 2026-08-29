@@ -237,11 +237,42 @@ class KalshiClient:
 
     # ================= Authenticated Trading Methods =================
 
-    def get_balance(self) -> Dict[str, Any]:
+    def get_balance(self, exchange_index: Optional[int] = None) -> Dict[str, Any]:
         """
         Retrieves account balance and available purchasing power.
         """
-        return self._request("GET", "/portfolio/balance", auth_required=True)
+        params = {}
+        if exchange_index is not None:
+            params["exchange_index"] = exchange_index
+        return self._request("GET", "/portfolio/balance", params=params, auth_required=True)
+
+    def ensure_shard_balance(self, destination_shard: int, required_cents: int) -> bool:
+        """
+        Ensures the destination shard has sufficient collateral before placing an order.
+        If the shard balance is less than required_cents, automatically transfers the deficit from Shard 0.
+        """
+        if destination_shard == 0:
+            return True
+        try:
+            # Check destination shard balance
+            dest_res = self.get_balance(exchange_index=destination_shard)
+            dest_balance = int(dest_res.get("balance", 0))
+            if dest_balance >= required_cents:
+                return True
+
+            deficit = required_cents - dest_balance
+            # Check source shard 0 balance
+            src_res = self.get_balance(exchange_index=0)
+            src_balance = int(src_res.get("balance", 0))
+
+            transfer_amount = min(max(deficit, 100), src_balance)
+            if transfer_amount > 0:
+                print(f"[KalshiClient] Transferring {transfer_amount}c collateral from Shard 0 to Shard {destination_shard}...")
+                self.transfer_to_shard(destination_shard=destination_shard, amount_cents=transfer_amount, source_shard=0)
+                return True
+        except Exception as e:
+            print(f"[KalshiClient] Shard collateral check/transfer notice: {e}")
+        return False
 
     def create_order(
         self,
@@ -282,7 +313,7 @@ class KalshiClient:
         v2_side = "bid" if side_clean in ["yes", "bid"] else "ask"
         v2_price = f"{price_cents / 100.0:.4f}" if v2_side == "bid" else f"{(100 - price_cents) / 100.0:.4f}"
 
-        # Determine target exchange shard index for fallback
+        # Determine target exchange shard index
         target_shard = exchange_index
         if target_shard is None or target_shard == -1:
             try:
@@ -294,22 +325,15 @@ class KalshiClient:
             except Exception:
                 target_shard = 0
 
-        # Strategy 1: Auto-routed payload (exchange_index = -1)
-        auto_routed_payload = {
-            "ticker": ticker,
-            "client_order_id": client_oid,
-            "side": v2_side,
-            "price": v2_price,
-            "count": count_fp,
-            "price_dollars": v2_price,
-            "count_fp": count_fp,
-            "time_in_force": tif_val,
-            "self_trade_prevention_type": "taker_at_cross",
-            "type": "limit",
-            "exchange_index": -1
-        }
+        # Calculate exact maximum risk in cents
+        contract_count = float(count_fp)
+        order_risk_cents = int(price_cents * contract_count) + 5 if v2_side == "bid" else int((100 - price_cents) * contract_count) + 5
 
-        # Strategy 2: Direct shard payload (exchange_index = target_shard)
+        # Ensure destination shard has collateral before order submission
+        if not dry_run and self.is_authenticated and target_shard > 0:
+            self.ensure_shard_balance(destination_shard=target_shard, required_cents=order_risk_cents)
+
+        # Build Direct shard payload
         direct_payload = {
             "ticker": ticker,
             "client_order_id": client_oid,
@@ -324,10 +348,8 @@ class KalshiClient:
             "exchange_index": target_shard
         }
 
-        active_payload = direct_payload if (exchange_index is not None and exchange_index >= 0) else auto_routed_payload
-
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order (exchange_index={active_payload.get('exchange_index')}): {active_payload}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order (exchange_index={target_shard}): {direct_payload}")
             return {
                 "status": "simulated",
                 "order_id": f"sim_{client_oid[:8]}",
@@ -336,27 +358,24 @@ class KalshiClient:
                 "side": side_clean,
                 "count_fp": count_fp,
                 "price_cents": price_cents,
-                "exchange_index": active_payload.get("exchange_index"),
+                "exchange_index": target_shard,
                 "simulated": True
             }
 
-        # 1. Try initial placement (Auto-routed or Direct)
         try:
             return self._request(
                 "POST",
                 "/portfolio/events/orders",
-                json_data=active_payload,
+                json_data=direct_payload,
                 auth_required=True
             )
         except Exception as e:
             err_msg = str(e).lower()
-            # If auto-routing failed or shard returned user_not_found/sharding
             if "user_not_found" in err_msg or "sharding" in err_msg:
-                print(f"[KalshiClient] Shard routing requires collateral initialization on Shard {target_shard}. Attempting transfer...")
+                print(f"[KalshiClient] Shard {target_shard} requires collateral initialization. Attempting transfer...")
                 try:
-                    order_risk_cents = max(500, int(price_cents * float(count_fp) * 1.5))
                     self.transfer_to_shard(destination_shard=target_shard, amount_cents=order_risk_cents)
-                    print(f"[KalshiClient] Successfully transferred {order_risk_cents}c to Shard {target_shard}. Retrying direct order placement...")
+                    print(f"[KalshiClient] Successfully transferred {order_risk_cents}c to Shard {target_shard}. Retrying order placement...")
                     return self._request(
                         "POST",
                         "/portfolio/events/orders",
