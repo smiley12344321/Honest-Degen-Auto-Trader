@@ -1,5 +1,86 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-29T14:13:00.000000+00:00",
-  "trades": {}
+  "last_updated": "2026-08-29T14:15:28.282572+00:00",
+  "trades": {
+    "695c2c51771682a4": {
+      "trade_id": "695c2c51771682a4",
+      "date_placed": "2026-08-29T14:15:24.993714+00:00",
+      "play": "UNLV -3.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-115",
+      "units": 1.0,
+      "kalshi_ticker": "KXNCAAFSPREAD-26AUG29MEMUNLV-UNLV4",
+      "kalshi_side": "yes",
+      "price_cents": 53,
+      "count_fp": "0.94",
+      "actual_risk_dollars": 0.4982,
+      "order_id": "01a04de0-0c60-7c84-8309-0e90915c19ef",
+      "simulated": false
+    },
+    "bca71d9a64b50c1d": {
+      "trade_id": "bca71d9a64b50c1d",
+      "date_placed": "2026-08-29T14:15:25.594883+00:00",
+      "play": "NC State +4.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-115",
+      "units": 1.0,
+      "kalshi_ticker": "KXNCAAFSPREAD-26AUG29NCSTUVA-UVA5",
+      "kalshi_side": "no",
+      "price_cents": 50,
+      "count_fp": "1.00",
+      "actual_risk_dollars": 0.5,
+      "order_id": "01a04de0-1048-708e-af69-46ff0c00d85f",
+      "simulated": false
+    },
+    "baab84f0bb60b341": {
+      "trade_id": "baab84f0bb60b341",
+      "date_placed": "2026-08-29T14:15:26.437121+00:00",
+      "play": "Jacksonville State +6.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-105",
+      "units": 2.5,
+      "kalshi_ticker": "KXNCAAFSPREAD-26AUG29JVSTNDSU-NDSU7",
+      "kalshi_side": "no",
+      "price_cents": 50,
+      "count_fp": "2.50",
+      "actual_risk_dollars": 1.25,
+      "order_id": "01a04de0-1430-7b80-a62d-bc8f4d1aa7e7",
+      "simulated": false
+    },
+    "182bafb8b7477a60": {
+      "trade_id": "182bafb8b7477a60",
+      "date_placed": "2026-08-29T14:15:26.820419+00:00",
+      "play": "Florida State -31.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-108",
+      "units": 2.0,
+      "kalshi_ticker": "KXNCAAFSPREAD-26AUG29NMSUFSU-FSU32",
+      "kalshi_side": "yes",
+      "price_cents": 52,
+      "count_fp": "1.92",
+      "actual_risk_dollars": 0.9984,
+      "order_id": "01a04de0-1430-7220-b4d9-69f3b7c0fc88",
+      "simulated": false
+    },
+    "371c28ab8b4c1443": {
+      "trade_id": "371c28ab8b4c1443",
+      "date_placed": "2026-08-29T14:15:28.118784+00:00",
+      "play": "Spurs/Newcastle O2.5",
+      "sport": "EPL",
+      "market": "Game Total",
+      "sheet_odds": "-150",
+      "units": 1.5,
+      "kalshi_ticker": "KXEPLTOTAL-26AUG29TOTNEW-3",
+      "kalshi_side": "yes",
+      "price_cents": 60,
+      "count_fp": "1.25",
+      "actual_risk_dollars": 0.75,
+      "order_id": "01a04de0-1c00-74db-a338-d49edae57500",
+      "simulated": false
+    }
+  }
 }
