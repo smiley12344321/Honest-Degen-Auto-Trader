@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-29T16:17:00.000000+00:00",
+  "last_updated": "2026-08-29T16:19:30.276782+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -64,6 +64,54 @@
       "count_fp": "1.25",
       "actual_risk_dollars": 0.75,
       "order_id": "01a04de0-1c00-74db-a338-d49edae57500",
+      "simulated": false
+    },
+    "bca71d9a64b50c1d": {
+      "trade_id": "bca71d9a64b50c1d",
+      "date_placed": "2026-08-29T16:19:28.284848+00:00",
+      "play": "NC State +4.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-115",
+      "units": 1.0,
+      "kalshi_ticker": "KXNCAAFSPREAD-26AUG29NCSTUVA-UVA5",
+      "kalshi_side": "no",
+      "price_cents": 53,
+      "count_fp": "0.94",
+      "actual_risk_dollars": 0.4982,
+      "order_id": "01a04e51-a280-76f4-9d4f-f10464805697",
+      "simulated": false
+    },
+    "9a709d9ea70bec0b": {
+      "trade_id": "9a709d9ea70bec0b",
+      "date_placed": "2026-08-29T16:19:28.840194+00:00",
+      "play": "Yankees -1.5",
+      "sport": "MLB",
+      "market": "Run Line",
+      "sheet_odds": "173",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26AUG291305BOSNYYG1-NYY2",
+      "kalshi_side": "yes",
+      "price_cents": 34,
+      "count_fp": "2.21",
+      "actual_risk_dollars": 0.7514,
+      "order_id": "01a04e51-a280-7bf6-a2c8-be29f271fc11",
+      "simulated": false
+    },
+    "cd3170c4c2a2ee04": {
+      "trade_id": "cd3170c4c2a2ee04",
+      "date_placed": "2026-08-29T16:19:29.483572+00:00",
+      "play": "Rangers/Brewers NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-132",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26AUG291915TEXMIL",
+      "kalshi_side": "no",
+      "price_cents": 54,
+      "count_fp": "1.39",
+      "actual_risk_dollars": 0.7506,
+      "order_id": "01a04e51-a668-7017-978b-789f99d85914",
       "simulated": false
     }
   }
