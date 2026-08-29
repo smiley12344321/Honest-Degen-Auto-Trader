@@ -332,13 +332,52 @@ class KalshiClient:
             )
         except Exception as e:
             err_msg = str(e).lower()
-            if "user_not_found" in err_msg or "sharding" in err_msg:
-                print(
-                    f"[KalshiClient] [ERROR] Order failed with 'user_not_found'. "
-                    f"Current Environment: '{self.env.upper()}' (Base URL: {self.base_url}). "
-                    f"If your API key was created on production Kalshi (kalshi.com), ensure KALSHI_ENV='prod' in your environment/secrets."
-                )
+            if ("user_not_found" in err_msg or "sharding" in err_msg) and target_exchange_index and target_exchange_index > 0:
+                print(f"[KalshiClient] Shard {target_exchange_index} requires collateral initialization. Attempting intra-shard transfer...")
+                try:
+                    order_risk_cents = max(500, int(price_cents * float(count_fp) * 1.5))
+                    self.transfer_to_shard(destination_shard=target_exchange_index, amount_cents=order_risk_cents)
+                    print(f"[KalshiClient] Transferred {order_risk_cents}c to Shard {target_exchange_index}. Retrying order placement...")
+                    return self._request(
+                        "POST",
+                        "/portfolio/events/orders",
+                        json_data=events_payload,
+                        auth_required=True
+                    )
+                except Exception as transfer_err:
+                    print(f"[KalshiClient] Auto-collateral transfer to Shard {target_exchange_index} failed: {transfer_err}")
             raise
+
+    def transfer_to_shard(self, destination_shard: int, amount_cents: int = 1000, source_shard: int = 0) -> Dict[str, Any]:
+        """
+        Transfers collateral between exchange shards (e.g. from Shard 0 to Shard 3 for Baseball/Tennis).
+        """
+        payload = {
+            "amount": amount_cents,
+            "source_exchange_shard": source_shard,
+            "destination_exchange_shard": destination_shard
+        }
+        try:
+            return self._request(
+                "POST",
+                "/portfolio/intra_exchange_instance_transfer",
+                json_data=payload,
+                auth_required=True
+            )
+        except Exception:
+            # Fallback to subaccounts transfer endpoint if supported
+            sub_payload = {
+                "amount_cents": amount_cents,
+                "from_subaccount": 0,
+                "to_subaccount": 0,
+                "exchange_index": destination_shard
+            }
+            return self._request(
+                "POST",
+                "/portfolio/subaccounts/transfer",
+                json_data=sub_payload,
+                auth_required=True
+            )
 
     def get_order(self, order_id: str) -> Dict[str, Any]:
         """
