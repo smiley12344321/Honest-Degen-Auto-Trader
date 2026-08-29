@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-29T15:54:02.480718+00:00",
+  "last_updated": "2026-08-29T16:02:59.262276+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -80,6 +80,54 @@
       "count_fp": "1.25",
       "actual_risk_dollars": 0.75,
       "order_id": "01a04de0-1c00-74db-a338-d49edae57500",
+      "simulated": false
+    },
+    "9a709d9ea70bec0b": {
+      "trade_id": "9a709d9ea70bec0b",
+      "date_placed": "2026-08-29T16:02:56.493490+00:00",
+      "play": "Yankees -1.5",
+      "sport": "MLB",
+      "market": "Run Line",
+      "sheet_odds": "173",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26AUG291305BOSNYYG1-NYY",
+      "kalshi_side": "yes",
+      "price_cents": 37,
+      "count_fp": "2.03",
+      "actual_risk_dollars": 0.7511,
+      "order_id": "01a04e42-7f80-77b4-a840-3e094422aa3d",
+      "simulated": false
+    },
+    "cd3170c4c2a2ee04": {
+      "trade_id": "cd3170c4c2a2ee04",
+      "date_placed": "2026-08-29T16:02:57.517103+00:00",
+      "play": "Rangers/Brewers NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-132",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26AUG291915TEXMIL",
+      "kalshi_side": "no",
+      "price_cents": 50,
+      "count_fp": "1.50",
+      "actual_risk_dollars": 0.75,
+      "order_id": "01a04e42-8368-7126-b068-d83222898a2b",
+      "simulated": false
+    },
+    "9727479c93480f2b": {
+      "trade_id": "9727479c93480f2b",
+      "date_placed": "2026-08-29T16:02:58.052627+00:00",
+      "play": "Kiwoom Heroes/Doosan Bears Under 7.5",
+      "sport": "KBO",
+      "market": "Game Total",
+      "sheet_odds": "-115",
+      "units": 1.5,
+      "kalshi_ticker": "KXKBOTOTAL-26AUG280530KIWDOO-8",
+      "kalshi_side": "no",
+      "price_cents": 50,
+      "count_fp": "1.50",
+      "actual_risk_dollars": 0.75,
+      "order_id": "01a04e42-8750-75da-a54f-51d5807b6e52",
       "simulated": false
     }
   }
