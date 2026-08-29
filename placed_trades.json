@@ -82,22 +82,6 @@
       "order_id": "01a04de0-1c00-74db-a338-d49edae57500",
       "simulated": false
     },
-    "9a709d9ea70bec0b": {
-      "trade_id": "9a709d9ea70bec0b",
-      "date_placed": "2026-08-29T16:02:56.493490+00:00",
-      "play": "Yankees -1.5",
-      "sport": "MLB",
-      "market": "Run Line",
-      "sheet_odds": "173",
-      "units": 1.5,
-      "kalshi_ticker": "KXMLBGAME-26AUG291305BOSNYYG1-NYY",
-      "kalshi_side": "yes",
-      "price_cents": 37,
-      "count_fp": "2.03",
-      "actual_risk_dollars": 0.7511,
-      "order_id": "01a04e42-7f80-77b4-a840-3e094422aa3d",
-      "simulated": false
-    },
     "cd3170c4c2a2ee04": {
       "trade_id": "cd3170c4c2a2ee04",
       "date_placed": "2026-08-29T16:02:57.517103+00:00",
