@@ -280,22 +280,7 @@ class KalshiClient:
         v2_side = "bid" if side_clean in ["yes", "bid"] else "ask"
         v2_price = f"{price_cents / 100.0:.4f}" if v2_side == "bid" else f"{(100 - price_cents) / 100.0:.4f}"
 
-        # Standard portfolio orders payload
-        count_val = float(count_fp) if "." in count_fp else int(count_fp)
-        standard_payload = {
-            "ticker": ticker,
-            "client_order_id": client_oid,
-            "side": "yes" if v2_side == "bid" else "no",
-            "action": "buy",
-            "count": count_val,
-            "yes_price": price_cents if v2_side == "bid" else (100 - price_cents),
-            "no_price": (100 - price_cents) if v2_side == "bid" else price_cents,
-            "time_in_force": tif_val,
-            "self_trade_prevention_type": "taker_at_cross",
-            "type": "limit"
-        }
-
-        # Sharded single-book events payload
+        # Kalshi V2 Create Order payload (Single-Book Event Orders)
         events_payload = {
             "ticker": ticker,
             "client_order_id": client_oid,
@@ -310,7 +295,7 @@ class KalshiClient:
         }
 
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order: {standard_payload}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order: {events_payload}")
             return {
                 "status": "simulated",
                 "order_id": f"sim_{client_oid[:8]}",
@@ -322,21 +307,20 @@ class KalshiClient:
                 "simulated": True
             }
 
-        # Try standard /portfolio/orders first, fallback to /portfolio/events/orders
         try:
             return self._request(
                 "POST",
-                "/portfolio/orders",
-                json_data=standard_payload,
+                "/portfolio/events/orders",
+                json_data=events_payload,
                 auth_required=True
             )
         except Exception as e:
-            if any(k in str(e).lower() for k in ["sharding", "user not found", "events", "404"]):
-                return self._request(
-                    "POST",
-                    "/portfolio/events/orders",
-                    json_data=events_payload,
-                    auth_required=True
+            err_msg = str(e).lower()
+            if "user_not_found" in err_msg or "sharding" in err_msg:
+                print(
+                    f"[KalshiClient] [ERROR] Order failed with 'user_not_found'. "
+                    f"Current Environment: '{self.env.upper()}' (Base URL: {self.base_url}). "
+                    f"If your API key was created on production Kalshi (kalshi.com), ensure KALSHI_ENV='prod' in your environment/secrets."
                 )
             raise
 

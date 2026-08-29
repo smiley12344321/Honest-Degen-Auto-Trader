@@ -34,7 +34,7 @@ DEFAULT_FRACTIONAL = str(_file_config.get("allow_fractional_contracts", True)).l
 ALLOW_FRACTIONAL_CONTRACTS = os.getenv("ALLOW_FRACTIONAL_CONTRACTS", str(DEFAULT_FRACTIONAL)).lower() in ("true", "1", "yes")
 
 # Kalshi Configuration
-KALSHI_ENV = os.getenv("KALSHI_ENV", "demo")  # "demo" or "prod"
+KALSHI_ENV = os.getenv("KALSHI_ENV", "prod").lower()  # "prod" or "demo"
 KALSHI_API_KEY_ID = os.getenv("KALSHI_API_KEY_ID", "")
 KALSHI_PRIVATE_KEY = os.getenv("KALSHI_PRIVATE_KEY", "")
 KALSHI_BASE_URL = (
