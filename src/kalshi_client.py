@@ -164,7 +164,7 @@ class KalshiClient:
         Retrieves active events and markets across all sports series.
         """
         sports_series_list = [
-            "KXMLBGAME", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLB1INNING", "KXNRFI", "KXMLB",
+            "KXMLBGAME", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLBRFI", "KXNPBRFI", "KXKBORFI", "KXMLB",
             "KXWNBAGAME", "KXWNBATOTAL", "KXWNBASPREAD", "KXWNBA1HTOTAL", "KXWNBA1HSPREAD",
             "KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES",
             "KXNCAAFGAME", "KXNCAAFSPREAD", "KXNCAAFTOTAL", "KXNFLGAME", "KXNFLSPREAD", "KXNFLTOTAL",

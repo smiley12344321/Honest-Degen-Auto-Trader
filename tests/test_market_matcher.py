@@ -51,9 +51,9 @@ def mock_events():
 class TestMarketMatcher:
 
     def test_normalize_team(self, matcher):
-        assert matcher.normalize_team("MLB", "D-backs") == "ARI"
-        assert matcher.normalize_team("MLB", "Rays") == "TBR"
-        assert matcher.normalize_team("MLB", "TB Rays") == "TBR"
+        assert matcher.normalize_team("MLB", "D-backs") == "AZ"
+        assert matcher.normalize_team("MLB", "Rays") == "TB"
+        assert matcher.normalize_team("MLB", "TB Rays") == "TB"
         assert matcher.normalize_team("WNBA", "Dallas Wings") == "DAL"
         assert matcher.normalize_team("NHL", "Canadiens") == "MTL"
 

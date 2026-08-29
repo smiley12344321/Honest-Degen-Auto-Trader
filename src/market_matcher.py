@@ -223,7 +223,7 @@ class MarketMatcher:
                 score += 50
             elif is_f3 and ("F3" in et or "first 3" in title):
                 score += 50
-            elif is_nrfi and ("NRFI" in et or "1INNING" in et or "first inning" in title):
+            elif is_nrfi and ("RFI" in et or "1INNING" in et or "first inning" in title or "1st inning" in title):
                 score += 50
             elif is_total and ("TOTAL" in et or "total" in title):
                 score += 50
@@ -231,6 +231,16 @@ class MarketMatcher:
                 score += 50
             elif is_ml and ("GAME" in et or "MATCH" in et):
                 score += 30
+
+            # Dual team match bonus (for matchups like Dodgers/Tigers, Padres/Rays, etc.)
+            matched_teams = 0
+            for idx_t in range(len(teams_extracted)):
+                t_raw = teams_extracted[idx_t] if idx_t < len(teams_extracted) else ""
+                t_norm = norm_teams[idx_t] if idx_t < len(norm_teams) else ""
+                if (t_norm and t_norm.upper() in et) or (t_raw and t_raw.lower() in title):
+                    matched_teams += 1
+            if len(teams_extracted) >= 2 and matched_teams >= 2:
+                score += 200
 
             return score
 
@@ -243,7 +253,7 @@ class MarketMatcher:
 
             # Filter by sport keyword in ticker or title if present
             sport_keywords = {
-                "MLB": ["mlb", "baseball", "nrfi", "f5", "f3", "rbi", "home run", "strikeout", "run line"],
+                "MLB": ["mlb", "baseball", "nrfi", "rfi", "f5", "f3", "rbi", "home run", "strikeout", "run line"],
                 "NBA": ["nba", "basketball"],
                 "WNBA": ["wnba", "basketball"],
                 "NHL": ["nhl", "hockey"],
@@ -268,15 +278,18 @@ class MarketMatcher:
             # Check child markets in event
             markets = event.get("markets", [])
             
-            # 1. Handle NRFI
+            # 1. Handle NRFI / YRFI
             if is_nrfi:
                 for mkt in markets:
                     m_title = mkt.get("title", "").lower()
-                    if "first inning" in m_title or "1st inning" in m_title or "nrfi" in m_title or "run" in m_title:
+                    m_ticker = mkt.get("ticker", "").lower()
+                    if "first inning" in m_title or "1st inning" in m_title or "rfi" in m_ticker or "run" in m_title:
+                        is_yrfi = "yrfi" in play_lower or "yrfi" in market_lower or "over" in play_lower
                         if "scoreless" in m_title or "no run" in m_title:
-                            best_side = "yes"
+                            best_side = "no" if is_yrfi else "yes"
                         else:
-                            best_side = "no"
+                            # Standard "1st inning: Over 0.5 runs" -> NRFI buys 'no', YRFI buys 'yes'
+                            best_side = "yes" if is_yrfi else "no"
                         best_market = mkt
                         best_event = event
                         break
