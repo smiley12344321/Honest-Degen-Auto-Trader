@@ -152,7 +152,38 @@ class MarketMatcher:
                 market_title=f"{len(resolved_legs)}-Leg Combo Parlay"
             )
 
-        return self._match_single_pick(pick, live_events)
+        # Match single pick against provided live events
+        res = self._match_single_pick(pick, live_events)
+        if res.matched:
+            return res
+
+        # If not matched in bulk events, execute targeted sport series fallback
+        if self.client:
+            sport_series_map = {
+                "MLB": ["KXMLBGAME", "KXMLBRFI", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLB"],
+                "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
+                "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
+                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL"],
+                "EPL": ["KXEPLTOTAL", "KXEPLGAME", "KXEPLBTTS", "KXEPLMATCH"],
+                "WNBA": ["KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
+                "NBA": ["KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD"],
+                "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
+            }
+            candidate_series = sport_series_map.get(pick.sport.upper(), [])
+            fallback_events = []
+            for st in candidate_series:
+                try:
+                    evs = self.client.get_events(series_ticker=st, status="open", with_nested_markets=True)
+                    if evs:
+                        fallback_events.extend(evs)
+                except Exception:
+                    pass
+            if fallback_events:
+                fallback_res = self._match_single_pick(pick, fallback_events)
+                if fallback_res.matched:
+                    return fallback_res
+
+        return res
 
     def _match_single_pick(self, pick: PickRecord, live_events: List[Dict[str, Any]]) -> MatchResult:
         play_lower = pick.play.lower()

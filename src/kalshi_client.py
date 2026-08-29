@@ -244,18 +244,7 @@ class KalshiClient:
         params = {}
         if exchange_index is not None:
             params["exchange_index"] = exchange_index
-        try:
-            res = self._request("GET", "/portfolio/balance", params=params, auth_required=True)
-            # If exchange_index requested, also verify against subaccount_balances if available
-            if exchange_index is not None and "balance" in res:
-                sub_bals = self.get_subaccount_balances()
-                for entry in sub_bals:
-                    if entry.get("exchange_index") == exchange_index:
-                        res["balance"] = entry.get("balance", res["balance"])
-                        break
-            return res
-        except Exception:
-            return {"balance": 0}
+        return self._request("GET", "/portfolio/balance", params=params, auth_required=True)
 
     def get_subaccount_balances(self) -> List[Dict[str, Any]]:
         """
