@@ -269,16 +269,17 @@ class KalshiClient:
             "fill_or_kill": "fill_or_kill"
         }
         tif_val = tif_map.get(time_in_force.lower(), "good_till_canceled")
+        v2_side = "bid" if side_clean in ["yes", "bid"] else "ask"
+        v2_price = f"{price_cents / 100.0:.4f}" if v2_side == "bid" else f"{(100 - price_cents) / 100.0:.4f}"
 
         payload = {
             "ticker": ticker,
             "client_order_id": client_oid,
-            "side": side_clean,
-            "action": "buy",
+            "side": v2_side,
+            "price": v2_price,
+            "count": count_fp,
+            "price_dollars": v2_price,
             "count_fp": count_fp,
-            "price_dollars": price_dollars,
-            "yes_price": price_cents if side_clean == "yes" else (100 - price_cents),
-            "no_price": (100 - price_cents) if side_clean == "yes" else price_cents,
             "time_in_force": tif_val,
             "self_trade_prevention_type": "taker_at_cross",
             "type": "limit"
