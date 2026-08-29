@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-29T19:11:24.979488+00:00",
+  "last_updated": "2026-08-29T19:54:57.923466+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -128,6 +128,22 @@
       "count_fp": "1.89",
       "actual_risk_dollars": 1.0017,
       "order_id": "01a04eef-0b60-7773-a6c7-8da56499736a",
+      "simulated": false
+    },
+    "3e8c46072f46a0ca": {
+      "trade_id": "3e8c46072f46a0ca",
+      "date_placed": "2026-08-29T19:54:57.566835+00:00",
+      "play": "Marlins F5 +0.5",
+      "sport": "MLB",
+      "market": "F5 Run Line",
+      "sheet_odds": "-135",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26AUG291605MIAWSH-MIA2",
+      "kalshi_side": "yes",
+      "price_cents": 38,
+      "count_fp": "1.97",
+      "actual_risk_dollars": 0.7486,
+      "order_id": "01a04f16-ea68-7651-8913-74d6eae0469b",
       "simulated": false
     }
   }
