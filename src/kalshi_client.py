@@ -251,6 +251,7 @@ class KalshiClient:
         price_cents: int,
         client_order_id: Optional[str] = None,
         time_in_force: str = "gtc",
+        exchange_index: Optional[int] = None,
         dry_run: bool = False
     ) -> Dict[str, Any]:
         """
@@ -263,6 +264,7 @@ class KalshiClient:
             price_cents: Limit price in cents (1 to 99)
             client_order_id: Unique UUID for idempotency
             time_in_force: 'gtc' or 'ioc'
+            exchange_index: Specific exchange shard index (e.g. 3 for baseball/KBO/MLB, 0 for default)
             dry_run: If True, simulates order placement without sending to API
         """
         client_oid = client_order_id or str(uuid.uuid4())
@@ -280,6 +282,18 @@ class KalshiClient:
         v2_side = "bid" if side_clean in ["yes", "bid"] else "ask"
         v2_price = f"{price_cents / 100.0:.4f}" if v2_side == "bid" else f"{(100 - price_cents) / 100.0:.4f}"
 
+        # Determine target exchange shard index
+        target_exchange_index = exchange_index
+        if target_exchange_index is None:
+            try:
+                mkt_data = self.get_market(ticker)
+                if "exchange_index" in mkt_data and mkt_data["exchange_index"] is not None:
+                    target_exchange_index = int(mkt_data["exchange_index"])
+                else:
+                    target_exchange_index = -1
+            except Exception:
+                target_exchange_index = -1
+
         # Kalshi V2 Create Order payload (Single-Book Event Orders)
         events_payload = {
             "ticker": ticker,
@@ -291,11 +305,12 @@ class KalshiClient:
             "count_fp": count_fp,
             "time_in_force": tif_val,
             "self_trade_prevention_type": "taker_at_cross",
-            "type": "limit"
+            "type": "limit",
+            "exchange_index": target_exchange_index
         }
 
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order: {events_payload}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order (exchange_index={target_exchange_index}): {events_payload}")
             return {
                 "status": "simulated",
                 "order_id": f"sim_{client_oid[:8]}",
@@ -304,6 +319,7 @@ class KalshiClient:
                 "side": side_clean,
                 "count_fp": count_fp,
                 "price_cents": price_cents,
+                "exchange_index": target_exchange_index,
                 "simulated": True
             }
 

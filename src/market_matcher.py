@@ -22,6 +22,7 @@ class MatchResult:
     unsupported: bool = False
     is_combo: bool = False
     combo_legs: Optional[List[Dict[str, str]]] = None
+    exchange_index: Optional[int] = None
 
 
 class MarketMatcher:
@@ -385,12 +386,16 @@ class MarketMatcher:
                 break
 
         if best_market:
+            ex_idx = best_market.get("exchange_index")
+            if ex_idx is None and best_event:
+                ex_idx = best_event.get("exchange_index")
             return MatchResult(
                 matched=True,
                 ticker=best_market.get("ticker"),
                 event_ticker=best_event.get("event_ticker") if best_event else None,
                 side=best_side,
-                market_title=best_market.get("title") or best_event.get("title")
+                market_title=best_market.get("title") or best_event.get("title"),
+                exchange_index=int(ex_idx) if ex_idx is not None else None
             )
 
         return MatchResult(

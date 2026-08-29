@@ -267,6 +267,7 @@ class Trader:
                     side=match.side,
                     count_fp=sizing["count_fp"],
                     price_cents=ask_cents,
+                    exchange_index=match.exchange_index,
                     dry_run=dry_run
                 )
                 
