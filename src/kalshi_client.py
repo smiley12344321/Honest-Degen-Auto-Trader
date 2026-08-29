@@ -265,7 +265,7 @@ class KalshiClient:
             src_res = self.get_balance(exchange_index=0)
             src_balance = int(src_res.get("balance", 0))
 
-            transfer_amount = min(max(deficit, 100), src_balance)
+            transfer_amount = min(deficit, src_balance)
             if transfer_amount > 0:
                 print(f"[KalshiClient] Transferring {transfer_amount}c collateral from Shard 0 to Shard {destination_shard}...")
                 self.transfer_to_shard(destination_shard=destination_shard, amount_cents=transfer_amount, source_shard=0)

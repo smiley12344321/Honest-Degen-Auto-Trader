@@ -89,6 +89,15 @@ class Trader:
 
         print(f"[Trader] Found {len(active_picks)} active picks to evaluate.")
 
+        # Log available balance if authenticated
+        if not dry_run and self.client.is_authenticated:
+            try:
+                bal_s0 = self.client.get_balance(exchange_index=0)
+                bal_s3 = self.client.get_balance(exchange_index=3)
+                print(f"[Trader] Account Balances -> Shard 0 (Football/Soccer): {bal_s0.get('balance', 0)}c | Shard 3 (Baseball/Tennis): {bal_s3.get('balance', 0)}c")
+            except Exception as e:
+                print(f"[Trader] Balance check notice: {e}")
+
         # Fetch open sports events from Kalshi if not passed
         if live_events is None:
             try:
@@ -259,6 +268,33 @@ class Trader:
                 price_cents=ask_cents,
                 allow_fractional=self.allow_fractional
             )
+
+            # 5b. Pre-trade available balance check & smart scaling
+            if not dry_run and self.client.is_authenticated:
+                try:
+                    target_shard = match.exchange_index or 0
+                    s0_bal = int(self.client.get_balance(exchange_index=0).get("balance", 0))
+                    st_bal = int(self.client.get_balance(exchange_index=target_shard).get("balance", 0)) if target_shard > 0 else s0_bal
+                    total_avail_cents = (s0_bal + st_bal) if target_shard > 0 else s0_bal
+
+                    req_risk_cents = int(sizing["actual_risk_dollars"] * 100)
+                    if total_avail_cents < req_risk_cents:
+                        if total_avail_cents >= 10:
+                            scaled_dollars = total_avail_cents / 100.0
+                            print(f"[Trader] Available funds ({total_avail_cents}c) below target risk (${sizing['actual_risk_dollars']:.2f}). Scaling down {pick.play} to ${scaled_dollars:.2f}...")
+                            sizing = calculate_sizing(
+                                units=scaled_dollars / effective_unit_size,
+                                unit_size_dollars=effective_unit_size,
+                                price_cents=ask_cents,
+                                allow_fractional=self.allow_fractional
+                            )
+                        else:
+                            print(f"[Trader] [NOTICE] Insufficient available balance for {pick.play} (Required: ${sizing['actual_risk_dollars']:.2f}, Available: ${total_avail_cents/100.0:.2f}).")
+                            self.notifier.notify_error("Insufficient Balance", f"Could not place {pick.play}: Needed ${sizing['actual_risk_dollars']:.2f}, Available: ${total_avail_cents/100.0:.2f}")
+                            skipped_count += 1
+                            continue
+                except Exception as b_err:
+                    pass
 
             # 6. Order execution
             try:
