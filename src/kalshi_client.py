@@ -164,11 +164,20 @@ class KalshiClient:
         Retrieves active events and markets across all sports series.
         """
         sports_series_list = [
+            # MLB & Baseball
             "KXMLBGAME", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLBRFI", "KXNPBRFI", "KXKBORFI", "KXMLB",
+            "KXKBOGAME", "KXKBOTOTAL",
+            # Basketball
             "KXWNBAGAME", "KXWNBATOTAL", "KXWNBASPREAD", "KXWNBA1HTOTAL", "KXWNBA1HSPREAD",
+            "KXNBAGAME", "KXNBATOTAL", "KXNBASPREAD",
+            # Tennis
             "KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES",
-            "KXNCAAFGAME", "KXNCAAFSPREAD", "KXNCAAFTOTAL", "KXNFLGAME", "KXNFLSPREAD", "KXNFLTOTAL",
-            "KXNBAGAME", "KXNHLGAME", "KXEPLGAME"
+            # Football
+            "KXNCAAFGAME", "KXNCAAFSPREAD", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1Q",
+            "KXNFLGAME", "KXNFLSPREAD", "KXNFLTOTAL",
+            # Hockey & Soccer
+            "KXNHLGAME",
+            "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"
         ]
         all_events = []
         for st in sports_series_list:
@@ -258,7 +267,6 @@ class KalshiClient:
         """
         client_oid = client_order_id or str(uuid.uuid4())
         side_clean = side.lower()
-        price_dollars = f"{price_cents / 100.0:.4f}"
 
         tif_map = {
             "gtc": "good_till_canceled",
@@ -272,7 +280,23 @@ class KalshiClient:
         v2_side = "bid" if side_clean in ["yes", "bid"] else "ask"
         v2_price = f"{price_cents / 100.0:.4f}" if v2_side == "bid" else f"{(100 - price_cents) / 100.0:.4f}"
 
-        payload = {
+        # Standard portfolio orders payload
+        count_val = float(count_fp) if "." in count_fp else int(count_fp)
+        standard_payload = {
+            "ticker": ticker,
+            "client_order_id": client_oid,
+            "side": "yes" if v2_side == "bid" else "no",
+            "action": "buy",
+            "count": count_val,
+            "yes_price": price_cents if v2_side == "bid" else (100 - price_cents),
+            "no_price": (100 - price_cents) if v2_side == "bid" else price_cents,
+            "time_in_force": tif_val,
+            "self_trade_prevention_type": "taker_at_cross",
+            "type": "limit"
+        }
+
+        # Sharded single-book events payload
+        events_payload = {
             "ticker": ticker,
             "client_order_id": client_oid,
             "side": v2_side,
@@ -286,7 +310,7 @@ class KalshiClient:
         }
 
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order: {payload}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order: {standard_payload}")
             return {
                 "status": "simulated",
                 "order_id": f"sim_{client_oid[:8]}",
@@ -298,12 +322,23 @@ class KalshiClient:
                 "simulated": True
             }
 
-        return self._request(
-            "POST",
-            "/portfolio/events/orders",
-            json_data=payload,
-            auth_required=True
-        )
+        # Try standard /portfolio/orders first, fallback to /portfolio/events/orders
+        try:
+            return self._request(
+                "POST",
+                "/portfolio/orders",
+                json_data=standard_payload,
+                auth_required=True
+            )
+        except Exception as e:
+            if any(k in str(e).lower() for k in ["sharding", "user not found", "events", "404"]):
+                return self._request(
+                    "POST",
+                    "/portfolio/events/orders",
+                    json_data=events_payload,
+                    auth_required=True
+                )
+            raise
 
     def get_order(self, order_id: str) -> Dict[str, Any]:
         """
