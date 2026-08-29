@@ -372,36 +372,20 @@ class KalshiClient:
         Transfers collateral between exchange shards (e.g. from Shard 0 to Shard 3 for Baseball/Tennis).
         """
         client_tid = str(uuid.uuid4())
-
-        # 1. Try Subaccounts Transfer endpoint with client_transfer_id
-        sub_payload = {
+        payload = {
             "client_transfer_id": client_tid,
-            "amount_cents": amount_cents,
-            "from_subaccount": 0,
-            "to_subaccount": 0,
-            "exchange_index": destination_shard
+            "amount": amount_cents,
+            "source": "event_contract",
+            "destination": "event_contract",
+            "source_exchange_shard": source_shard,
+            "destination_exchange_shard": destination_shard
         }
-        try:
-            return self._request(
-                "POST",
-                "/portfolio/subaccounts/transfer",
-                json_data=sub_payload,
-                auth_required=True
-            )
-        except Exception as e1:
-            # 2. Try Intra Exchange Instance Transfer endpoint
-            instance_payload = {
-                "client_transfer_id": client_tid,
-                "amount": amount_cents,
-                "source_exchange_shard": source_shard,
-                "destination_exchange_shard": destination_shard
-            }
-            return self._request(
-                "POST",
-                "/portfolio/intra_exchange_instance_transfer",
-                json_data=instance_payload,
-                auth_required=True
-            )
+        return self._request(
+            "POST",
+            "/portfolio/intra_exchange_instance_transfer",
+            json_data=payload,
+            auth_required=True
+        )
 
     def get_order(self, order_id: str) -> Dict[str, Any]:
         """
