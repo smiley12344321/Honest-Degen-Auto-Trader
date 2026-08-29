@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-29T17:18:47.453080+00:00",
+  "last_updated": "2026-08-29T19:11:24.979488+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -112,6 +112,22 @@
       "count_fp": "1.39",
       "actual_risk_dollars": 0.7506,
       "order_id": "01a04e51-a668-7017-978b-789f99d85914",
+      "simulated": false
+    },
+    "62b07e4123595bcf": {
+      "trade_id": "62b07e4123595bcf",
+      "date_placed": "2026-08-29T19:11:24.676825+00:00",
+      "play": "Cardinals ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-119",
+      "units": 2.0,
+      "kalshi_ticker": "KXMLBGAME-26AUG291415PITSTL-STL",
+      "kalshi_side": "yes",
+      "price_cents": 53,
+      "count_fp": "1.89",
+      "actual_risk_dollars": 1.0017,
+      "order_id": "01a04eef-0b60-7773-a6c7-8da56499736a",
       "simulated": false
     }
   }
