@@ -160,7 +160,7 @@ class MarketMatcher:
         # If not matched in bulk events, execute targeted sport series fallback
         if self.client:
             sport_series_map = {
-                "MLB": ["KXMLBGAME", "KXMLBRFI", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLB"],
+                "MLB": ["KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
                 "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                 "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
                 "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL"],

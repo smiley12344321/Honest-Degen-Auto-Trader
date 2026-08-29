@@ -165,7 +165,8 @@ class KalshiClient:
         """
         sports_series_list = [
             # MLB & Baseball
-            "KXMLBGAME", "KXMLBF5", "KXMLBF3", "KXMLBF7", "KXMLBRFI", "KXNPBRFI", "KXKBORFI", "KXMLB",
+            "KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL",
+            "KXMLBF3", "KXMLBF7", "KXMLBRFI", "KXNPBRFI", "KXKBORFI", "KXMLB",
             "KXKBOGAME", "KXKBOTOTAL",
             # Basketball
             "KXWNBAGAME", "KXWNBATOTAL", "KXWNBASPREAD", "KXWNBA1HTOTAL", "KXWNBA1HSPREAD",
@@ -199,40 +200,52 @@ class KalshiClient:
     def get_orderbook(self, ticker: str, depth: int = 5) -> Dict[str, Any]:
         """
         Retrieves the orderbook for a given market ticker.
-        Returns: { "yes": [[price_cents, count], ...], "no": [[price_cents, count], ...] }
         """
         res = self._request("GET", f"/markets/{ticker}/orderbook", params={"depth": depth})
         return res.get("orderbook", res)
 
     def get_best_ask_cents(self, ticker: str, side: str = "yes") -> Optional[int]:
         """
-        Retrieves the best available ask price in cents for 'yes' or 'no'.
+        Retrieves the best available ask price in cents for 'yes' or 'no'
+        by inspecting the live orderbook (Taker price for immediate fills).
         """
         try:
-            ob = self.get_orderbook(ticker, depth=3)
-            # Kalshi orderbook structure has yes/no bids/asks
-            # Buying 'yes' takes the best 'yes' ask (or 100 - best 'no' bid)
-            if side.lower() == "yes":
-                if "yes" in ob and ob["yes"]:
-                    # Best yes price from book
-                    return int(ob["yes"][0][0])
-                elif "no" in ob and ob["no"]:
-                    # Complementary price
-                    return 100 - int(ob["no"][0][0])
+            ob = self.get_orderbook(ticker, depth=5)
+            ob_fp = ob.get("orderbook_fp", ob) if isinstance(ob, dict) else {}
+
+            yes_bids = ob_fp.get("yes_dollars") or ob.get("yes", [])
+            no_bids = ob_fp.get("no_dollars") or ob.get("no", [])
+
+            # Buying 'yes' takes the best available YES ask (1.00 - highest NO bid)
+            if side.lower() in ("yes", "bid"):
+                if no_bids:
+                    highest_no = max(float(x[0]) if isinstance(x, (list, tuple)) else float(x) for x in no_bids)
+                    if highest_no > 1.0:
+                        highest_no /= 100.0
+                    yes_ask = round((1.0 - highest_no) * 100)
+                    return max(1, min(99, yes_ask))
+            # Buying 'no' takes the best available NO ask (1.00 - highest YES bid)
             else:
-                if "no" in ob and ob["no"]:
-                    return int(ob["no"][0][0])
-                elif "yes" in ob and ob["yes"]:
-                    return 100 - int(ob["yes"][0][0])
-            
-            # Fallback to market top-level last_price or yes_ask
+                if yes_bids:
+                    highest_yes = max(float(x[0]) if isinstance(x, (list, tuple)) else float(x) for x in yes_bids)
+                    if highest_yes > 1.0:
+                        highest_yes /= 100.0
+                    no_ask = round((1.0 - highest_yes) * 100)
+                    return max(1, min(99, no_ask))
+
+            # Fallback to market top-level fields
             mkt = self.get_market(ticker)
-            if side.lower() == "yes":
-                return mkt.get("yes_ask") or mkt.get("last_price")
+            if side.lower() in ("yes", "bid"):
+                ask = mkt.get("yes_ask") or mkt.get("yes_ask_dollars")
+                if ask is not None:
+                    return int(float(ask) * 100) if float(ask) <= 1.0 else int(ask)
             else:
-                return mkt.get("no_ask") or (100 - (mkt.get("last_price") or 50))
+                ask = mkt.get("no_ask") or mkt.get("no_ask_dollars")
+                if ask is not None:
+                    return int(float(ask) * 100) if float(ask) <= 1.0 else int(ask)
+            return None
         except Exception as e:
-            print(f"[KalshiClient] Could not fetch orderbook for {ticker}: {e}")
+            print(f"[KalshiClient] Could not fetch live ask for {ticker}: {e}")
             return None
 
     # ================= Authenticated Trading Methods =================
