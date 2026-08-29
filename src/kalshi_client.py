@@ -423,11 +423,13 @@ class KalshiClient:
     def transfer_to_shard(self, destination_shard: int, amount_cents: int = 1000, source_shard: int = 0) -> Dict[str, Any]:
         """
         Transfers collateral between exchange shards (e.g. from Shard 0 to Shard 3 for Baseball/Tennis).
+        Note: Kalshi's intra_exchange_instance_transfer API parameter 'amount' is in units of 100 = 1 cent ($1.00 = 10,000).
         """
         client_tid = str(uuid.uuid4())
+        api_amount = amount_cents * 100
         payload = {
             "client_transfer_id": client_tid,
-            "amount": amount_cents,
+            "amount": api_amount,
             "source": "event_contract",
             "destination": "event_contract",
             "source_exchange_shard": source_shard,
@@ -441,7 +443,7 @@ class KalshiClient:
             json_data=payload,
             auth_required=True
         )
-        print(f"[KalshiClient] Intra-shard transfer (Shard {source_shard} -> Shard {destination_shard}, Amount: {amount_cents}c) submitted: {res}")
+        print(f"[KalshiClient] Intra-shard transfer (Shard {source_shard} -> Shard {destination_shard}, Amount: {amount_cents}c [API Units: {api_amount}]) submitted: {res}")
         return res
 
     def get_order(self, order_id: str) -> Dict[str, Any]:
