@@ -244,7 +244,28 @@ class KalshiClient:
         params = {}
         if exchange_index is not None:
             params["exchange_index"] = exchange_index
-        return self._request("GET", "/portfolio/balance", params=params, auth_required=True)
+        try:
+            res = self._request("GET", "/portfolio/balance", params=params, auth_required=True)
+            # If exchange_index requested, also verify against subaccount_balances if available
+            if exchange_index is not None and "balance" in res:
+                sub_bals = self.get_subaccount_balances()
+                for entry in sub_bals:
+                    if entry.get("exchange_index") == exchange_index:
+                        res["balance"] = entry.get("balance", res["balance"])
+                        break
+            return res
+        except Exception:
+            return {"balance": 0}
+
+    def get_subaccount_balances(self) -> List[Dict[str, Any]]:
+        """
+        Retrieves per-shard subaccount balances from Kalshi.
+        """
+        try:
+            res = self._request("GET", "/portfolio/subaccounts/balances", auth_required=True)
+            return res.get("subaccount_balances", [])
+        except Exception:
+            return []
 
     def ensure_shard_balance(self, destination_shard: int, required_cents: int) -> bool:
         """
@@ -266,14 +287,14 @@ class KalshiClient:
             src_res = self.get_balance(exchange_index=0)
             src_balance = int(src_res.get("balance", 0))
 
-            # Transfer the needed funds with a buffer (e.g. transfer min(max(deficit + 100, 200), src_balance))
-            transfer_amount = min(max(deficit + 100, 200), src_balance)
+            # Transfer the needed funds with a buffer (e.g. at least 500c / $5.00)
+            transfer_amount = min(max(deficit + 200, 500), src_balance)
             if transfer_amount > 0:
                 print(f"[KalshiClient] Transferring {transfer_amount}c collateral from Shard 0 to Shard {destination_shard}...")
                 self.transfer_to_shard(destination_shard=destination_shard, amount_cents=transfer_amount, source_shard=0)
 
                 # Wait for intra-exchange transfer to settle on the destination shard
-                for _ in range(10):
+                for _ in range(12):
                     time.sleep(0.5)
                     updated_dest = self.get_balance(exchange_index=destination_shard)
                     cur_bal = int(updated_dest.get("balance", 0))
@@ -281,7 +302,7 @@ class KalshiClient:
                         print(f"[KalshiClient] Shard {destination_shard} balance confirmed: {cur_bal}c (Settled).")
                         return True
 
-                print(f"[KalshiClient] Warning: Shard {destination_shard} balance transfer submitted, proceeding with order.")
+                print(f"[KalshiClient] Shard {destination_shard} balance transfer submitted, proceeding with order.")
                 return True
         except Exception as e:
             print(f"[KalshiClient] Shard collateral check/transfer notice: {e}")
@@ -410,14 +431,18 @@ class KalshiClient:
             "source": "event_contract",
             "destination": "event_contract",
             "source_exchange_shard": source_shard,
-            "destination_exchange_shard": destination_shard
+            "destination_exchange_shard": destination_shard,
+            "source_subaccount": 0,
+            "destination_subaccount": 0
         }
-        return self._request(
+        res = self._request(
             "POST",
             "/portfolio/intra_exchange_instance_transfer",
             json_data=payload,
             auth_required=True
         )
+        print(f"[KalshiClient] Intra-shard transfer (Shard {source_shard} -> Shard {destination_shard}, Amount: {amount_cents}c) submitted: {res}")
+        return res
 
     def get_order(self, order_id: str) -> Dict[str, Any]:
         """
