@@ -249,7 +249,8 @@ class KalshiClient:
     def ensure_shard_balance(self, destination_shard: int, required_cents: int) -> bool:
         """
         Ensures the destination shard has sufficient collateral before placing an order.
-        If the shard balance is less than required_cents, automatically transfers the deficit from Shard 0.
+        If the shard balance is less than required_cents, transfers from Shard 0 and
+        waits for the balance to settle before proceeding.
         """
         if destination_shard == 0:
             return True
@@ -265,10 +266,22 @@ class KalshiClient:
             src_res = self.get_balance(exchange_index=0)
             src_balance = int(src_res.get("balance", 0))
 
-            transfer_amount = min(deficit, src_balance)
+            # Transfer the needed funds with a buffer (e.g. transfer min(max(deficit + 100, 200), src_balance))
+            transfer_amount = min(max(deficit + 100, 200), src_balance)
             if transfer_amount > 0:
                 print(f"[KalshiClient] Transferring {transfer_amount}c collateral from Shard 0 to Shard {destination_shard}...")
                 self.transfer_to_shard(destination_shard=destination_shard, amount_cents=transfer_amount, source_shard=0)
+
+                # Wait for intra-exchange transfer to settle on the destination shard
+                for _ in range(10):
+                    time.sleep(0.5)
+                    updated_dest = self.get_balance(exchange_index=destination_shard)
+                    cur_bal = int(updated_dest.get("balance", 0))
+                    if cur_bal >= required_cents:
+                        print(f"[KalshiClient] Shard {destination_shard} balance confirmed: {cur_bal}c (Settled).")
+                        return True
+
+                print(f"[KalshiClient] Warning: Shard {destination_shard} balance transfer submitted, proceeding with order.")
                 return True
         except Exception as e:
             print(f"[KalshiClient] Shard collateral check/transfer notice: {e}")
