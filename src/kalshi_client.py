@@ -282,20 +282,20 @@ class KalshiClient:
         v2_side = "bid" if side_clean in ["yes", "bid"] else "ask"
         v2_price = f"{price_cents / 100.0:.4f}" if v2_side == "bid" else f"{(100 - price_cents) / 100.0:.4f}"
 
-        # Determine target exchange shard index
-        target_exchange_index = exchange_index
-        if target_exchange_index is None:
+        # Determine target exchange shard index for fallback
+        target_shard = exchange_index
+        if target_shard is None or target_shard == -1:
             try:
                 mkt_data = self.get_market(ticker)
                 if "exchange_index" in mkt_data and mkt_data["exchange_index"] is not None:
-                    target_exchange_index = int(mkt_data["exchange_index"])
+                    target_shard = int(mkt_data["exchange_index"])
                 else:
-                    target_exchange_index = -1
+                    target_shard = 0
             except Exception:
-                target_exchange_index = -1
+                target_shard = 0
 
-        # Kalshi V2 Create Order payload (Single-Book Event Orders)
-        events_payload = {
+        # Strategy 1: Auto-routed payload (exchange_index = -1)
+        auto_routed_payload = {
             "ticker": ticker,
             "client_order_id": client_oid,
             "side": v2_side,
@@ -306,11 +306,28 @@ class KalshiClient:
             "time_in_force": tif_val,
             "self_trade_prevention_type": "taker_at_cross",
             "type": "limit",
-            "exchange_index": target_exchange_index
+            "exchange_index": -1
         }
 
+        # Strategy 2: Direct shard payload (exchange_index = target_shard)
+        direct_payload = {
+            "ticker": ticker,
+            "client_order_id": client_oid,
+            "side": v2_side,
+            "price": v2_price,
+            "count": count_fp,
+            "price_dollars": v2_price,
+            "count_fp": count_fp,
+            "time_in_force": tif_val,
+            "self_trade_prevention_type": "taker_at_cross",
+            "type": "limit",
+            "exchange_index": target_shard
+        }
+
+        active_payload = direct_payload if (exchange_index is not None and exchange_index >= 0) else auto_routed_payload
+
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order (exchange_index={target_exchange_index}): {events_payload}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would place order (exchange_index={active_payload.get('exchange_index')}): {active_payload}")
             return {
                 "status": "simulated",
                 "order_id": f"sim_{client_oid[:8]}",
@@ -319,63 +336,70 @@ class KalshiClient:
                 "side": side_clean,
                 "count_fp": count_fp,
                 "price_cents": price_cents,
-                "exchange_index": target_exchange_index,
+                "exchange_index": active_payload.get("exchange_index"),
                 "simulated": True
             }
 
+        # 1. Try initial placement (Auto-routed or Direct)
         try:
             return self._request(
                 "POST",
                 "/portfolio/events/orders",
-                json_data=events_payload,
+                json_data=active_payload,
                 auth_required=True
             )
         except Exception as e:
             err_msg = str(e).lower()
-            if ("user_not_found" in err_msg or "sharding" in err_msg) and target_exchange_index and target_exchange_index > 0:
-                print(f"[KalshiClient] Shard {target_exchange_index} requires collateral initialization. Attempting intra-shard transfer...")
+            # If auto-routing failed or shard returned user_not_found/sharding
+            if "user_not_found" in err_msg or "sharding" in err_msg:
+                print(f"[KalshiClient] Shard routing requires collateral initialization on Shard {target_shard}. Attempting transfer...")
                 try:
                     order_risk_cents = max(500, int(price_cents * float(count_fp) * 1.5))
-                    self.transfer_to_shard(destination_shard=target_exchange_index, amount_cents=order_risk_cents)
-                    print(f"[KalshiClient] Transferred {order_risk_cents}c to Shard {target_exchange_index}. Retrying order placement...")
+                    self.transfer_to_shard(destination_shard=target_shard, amount_cents=order_risk_cents)
+                    print(f"[KalshiClient] Successfully transferred {order_risk_cents}c to Shard {target_shard}. Retrying direct order placement...")
                     return self._request(
                         "POST",
                         "/portfolio/events/orders",
-                        json_data=events_payload,
+                        json_data=direct_payload,
                         auth_required=True
                     )
                 except Exception as transfer_err:
-                    print(f"[KalshiClient] Auto-collateral transfer to Shard {target_exchange_index} failed: {transfer_err}")
+                    print(f"[KalshiClient] Auto-collateral transfer to Shard {target_shard} failed: {transfer_err}")
             raise
 
     def transfer_to_shard(self, destination_shard: int, amount_cents: int = 1000, source_shard: int = 0) -> Dict[str, Any]:
         """
         Transfers collateral between exchange shards (e.g. from Shard 0 to Shard 3 for Baseball/Tennis).
         """
-        payload = {
-            "amount": amount_cents,
-            "source_exchange_shard": source_shard,
-            "destination_exchange_shard": destination_shard
+        client_tid = str(uuid.uuid4())
+
+        # 1. Try Subaccounts Transfer endpoint with client_transfer_id
+        sub_payload = {
+            "client_transfer_id": client_tid,
+            "amount_cents": amount_cents,
+            "from_subaccount": 0,
+            "to_subaccount": 0,
+            "exchange_index": destination_shard
         }
         try:
             return self._request(
                 "POST",
-                "/portfolio/intra_exchange_instance_transfer",
-                json_data=payload,
+                "/portfolio/subaccounts/transfer",
+                json_data=sub_payload,
                 auth_required=True
             )
-        except Exception:
-            # Fallback to subaccounts transfer endpoint if supported
-            sub_payload = {
-                "amount_cents": amount_cents,
-                "from_subaccount": 0,
-                "to_subaccount": 0,
-                "exchange_index": destination_shard
+        except Exception as e1:
+            # 2. Try Intra Exchange Instance Transfer endpoint
+            instance_payload = {
+                "client_transfer_id": client_tid,
+                "amount": amount_cents,
+                "source_exchange_shard": source_shard,
+                "destination_exchange_shard": destination_shard
             }
             return self._request(
                 "POST",
-                "/portfolio/subaccounts/transfer",
-                json_data=sub_payload,
+                "/portfolio/intra_exchange_instance_transfer",
+                json_data=instance_payload,
                 auth_required=True
             )
 
