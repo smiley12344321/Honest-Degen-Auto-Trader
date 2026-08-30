@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-30T00:33:50.095481+00:00",
+  "last_updated": "2026-08-30T05:52:01.040686+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -144,6 +144,38 @@
       "count_fp": "1.97",
       "actual_risk_dollars": 0.7486,
       "order_id": "01a04f16-ea68-7651-8913-74d6eae0469b",
+      "simulated": false
+    },
+    "117eac7c3165c60f": {
+      "trade_id": "117eac7c3165c60f",
+      "date_placed": "2026-08-30T05:51:59.838049+00:00",
+      "play": "Marlins/Nationals NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-108",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26AUG301215MIAWSH",
+      "kalshi_side": "no",
+      "price_cents": 51,
+      "count_fp": "1.47",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a05139-8418-772f-bf0e-8607215276dc",
+      "simulated": false
+    },
+    "d0f9926b27320110": {
+      "trade_id": "d0f9926b27320110",
+      "date_placed": "2026-08-30T05:52:00.793804+00:00",
+      "play": "Padres/Rays NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-130",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBRFI-26AUG301340SDTB",
+      "kalshi_side": "no",
+      "price_cents": 56,
+      "count_fp": "0.89",
+      "actual_risk_dollars": 0.4984,
+      "order_id": "01a05139-8800-7e63-a1cf-d2e73f1198b9",
       "simulated": false
     }
   }
