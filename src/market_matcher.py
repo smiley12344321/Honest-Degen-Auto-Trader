@@ -78,21 +78,35 @@ class MarketMatcher:
         """
         Extracts individual legs from a parlay play description or notes.
         Examples:
+          - 'Rinderknech ML + Tirante ML' -> ['Rinderknech ML', 'Tirante ML']
+          - 'Dodgers F5 +1 + Guardians F5 +0.5' -> ['Dodgers F5 +1', 'Guardians F5 +0.5']
           - 'Gauff +3.5 / Tiafoe +4.5' -> ['Gauff +3.5', 'Tiafoe +4.5']
-          - 'Brunold ML / Gulin ML' -> ['Brunold ML', 'Gulin ML']
         """
-        # First check play string for slashes or ' & '
-        if "/" in play and not any(k in play.lower() for k in ["under", "over", "nrfi"]):
-            return [p.strip() for p in play.split("/") if p.strip()]
-        if "&" in play:
-            return [p.strip() for p in play.split("&") if p.strip()]
-        
-        # If play is generic like '10-Leg Royal Sweep', inspect notes for player names/legs
-        if notes:
-            # Look for lines or bullet points in notes
-            note_lines = [l.strip() for l in re.split(r"[;\n,]+", notes) if len(l.strip()) > 3]
-            if len(note_lines) >= 2:
-                return note_lines
+        # 1. Primary: Split the play string on multi-leg separators:
+        #    ' + ' (plus sign with spaces), ' / ' (except totals like O/U), ' & ', ' and ', ' | '
+        split_pattern = r"\s+\+\s+|\s+/\s+|\s+&\s+|\s+and\s+|\s+\|\s+"
+        if not any(k in play.lower() for k in ["under", "over", "o/u", "nrfi", "yrfi"]):
+            parts = [p.strip() for p in re.split(split_pattern, play, flags=re.IGNORECASE) if p.strip()]
+            if len(parts) >= 2:
+                return parts
+
+        # If '+' exists with spaces anywhere in play
+        if " + " in play:
+            parts = [p.strip() for p in play.split(" + ") if p.strip()]
+            if len(parts) >= 2:
+                return parts
+
+        # 2. Secondary: If play is a generic sweep title (e.g. '10-Leg Parlay', 'Sunday Sweep'),
+        #    only then inspect notes for structured bullet points or lines
+        play_lower = play.lower()
+        if any(k in play_lower for k in ["sweep", "parlay", "teaser"]) and notes:
+            lines = [l.strip() for l in re.split(r"[\r\n]+", notes) if len(l.strip()) > 3]
+            bet_lines = [
+                l for l in lines 
+                if any(k in l.lower() for k in [" ml", "+", "-", "over ", "under ", " to win", " f5"])
+            ]
+            if len(bet_lines) >= 2:
+                return bet_lines
 
         return [play.strip()]
 
@@ -114,13 +128,31 @@ class MarketMatcher:
             resolved_legs = []
             
             for leg_str in legs:
-                # Sub-match each leg
+                leg_lower = leg_str.lower()
+                if "f5" in leg_lower or "first 5" in leg_lower:
+                    if "+" in leg_lower or "-" in leg_lower or "spread" in leg_lower:
+                        sub_market = "First 5 Spread"
+                    else:
+                        sub_market = "First 5 Moneyline"
+                elif "f3" in leg_lower or "first 3" in leg_lower:
+                    sub_market = "First 3 Moneyline"
+                elif "nrfi" in leg_lower or "yrfi" in leg_lower or "first inning" in leg_lower:
+                    sub_market = "NRFI"
+                elif "total" in leg_lower or "over" in leg_lower or "under" in leg_lower:
+                    sub_market = "Game Total"
+                elif "+" in leg_lower or (re.search(r"-\d", leg_lower) and not re.search(r"ml", leg_lower)):
+                    sub_market = "Spread"
+                elif "ml" in leg_lower or "win" in leg_lower or "side" in leg_lower:
+                    sub_market = "Moneyline"
+                else:
+                    sub_market = pick.market
+
                 sub_pick = PickRecord(
                     day=pick.day,
                     date=pick.date,
                     sport=pick.sport,
                     play=leg_str,
-                    market="Side / ML" if "ml" in leg_str.lower() else pick.market,
+                    market=sub_market,
                     odds_raw="",
                     odds_numeric=None,
                     implied_cents=None,
@@ -132,6 +164,31 @@ class MarketMatcher:
                     trade_id=f"leg_{hashlib.sha256(leg_str.encode()).hexdigest()[:8]}"
                 )
                 leg_res = self._match_single_pick(sub_pick, live_events)
+                if not leg_res.matched and self.client:
+                    # Targeted sport series fallback for this leg
+                    sport_series_map = {
+                        "MLB": ["KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
+                        "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
+                        "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
+                        "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
+                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL"],
+                        "EPL": ["KXEPLTOTAL", "KXEPLGAME", "KXEPLBTTS", "KXEPLMATCH"],
+                        "WNBA": ["KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
+                        "NBA": ["KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD"],
+                        "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
+                    }
+                    candidate_series = sport_series_map.get(pick.sport.upper(), [])
+                    fallback_events = []
+                    for st in candidate_series:
+                        try:
+                            evs = self.client.get_events(series_ticker=st, status="open", with_nested_markets=True)
+                            if evs:
+                                fallback_events.extend(evs)
+                        except Exception:
+                            pass
+                    if fallback_events:
+                        leg_res = self._match_single_pick(sub_pick, fallback_events)
+
                 if not leg_res.matched:
                     return MatchResult(
                         matched=False,
@@ -162,6 +219,7 @@ class MarketMatcher:
             sport_series_map = {
                 "MLB": ["KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
                 "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
+                "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
                 "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
                 "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL"],
                 "EPL": ["KXEPLTOTAL", "KXEPLGAME", "KXEPLBTTS", "KXEPLMATCH"],
@@ -196,8 +254,8 @@ class MarketMatcher:
         # Determine market category
         is_nrfi = "nrfi" in market_lower or "nrfi" in play_lower or "first inning" in market_lower or "1st inning" in market_lower or "yrfi" in market_lower or "yrfi" in play_lower
         is_f5 = "f5" in market_lower or "f5" in play_lower or "first 5" in market_lower
-        is_f3 = "f3" in market_lower or "f3" in play_lower or "first 3" in market_lower or "first 3" in play_lower
-        is_spread = "spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or "+" in play_lower or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f5 and not is_f3)
+        is_f3 = "f3" in market_lower or "f3" in play_lower or "first 3" in market_lower
+        is_spread = "spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or "+" in play_lower or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)))
         is_ml = "moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower
         is_total = "total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower or "goals" in market_lower or re.search(r"\b[ou]\d+", play_lower)
         is_explicit_no = play_lower.startswith("no ") or play_lower.startswith("no ·") or "to win: no" in play_lower
@@ -237,7 +295,9 @@ class MarketMatcher:
                 score += 100
             
             # Series category match bonus
-            if is_f5 and ("F5" in et or "first 5" in title):
+            if is_f5 and is_spread and ("F5SPREAD" in et or "first 5 spread" in title):
+                score += 80
+            elif is_f5 and not is_spread and ("F5" in et or "first 5" in title) and "SPREAD" not in et:
                 score += 50
             elif is_f3 and ("F3" in et or "first 3" in title):
                 score += 50
@@ -271,6 +331,7 @@ class MarketMatcher:
 
             sport_keywords = {
                 "MLB": ["mlb", "baseball", "nrfi", "rfi", "f5", "f3", "rbi", "home run", "strikeout", "run line"],
+                "NPB": ["npb", "baseball", "japan", "japanese"],
                 "NBA": ["nba", "basketball"],
                 "WNBA": ["wnba", "basketball"],
                 "NHL": ["nhl", "hockey"],
@@ -312,8 +373,8 @@ class MarketMatcher:
                         best_event = event
                         break
 
-            # 2. Handle F3, F5, F7, and Moneyline
-            elif is_f3 or is_f5 or is_ml:
+            # 2. Handle F3, F5 Moneyline, and Full Game Moneyline
+            elif (is_f5 and not is_spread) or is_f3 or (is_ml and not is_spread):
                 for mkt in markets:
                     m_title = mkt.get("title", "").lower()
                     m_ticker = mkt.get("ticker", "").upper()
