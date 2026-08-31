@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-31T10:45:01.093557+00:00",
+  "last_updated": "2026-08-31T13:28:30.028480+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -240,6 +240,22 @@
       "count_fp": "0.98",
       "actual_risk_dollars": 0.4998,
       "order_id": "01a0576c-23e0-73d3-a767-97e8ed0e4262",
+      "simulated": false
+    },
+    "8e3d067558d4ddb7": {
+      "trade_id": "8e3d067558d4ddb7",
+      "date_placed": "2026-08-31T13:28:28.980254+00:00",
+      "play": "SoftBank Hawks/Orix Buffaloes Under 7",
+      "sport": "NPB",
+      "market": "Game Total",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXNPBTOTAL-26SEP010500FUKHOK-8",
+      "kalshi_side": "no",
+      "price_cents": 54,
+      "count_fp": "1.39",
+      "actual_risk_dollars": 0.7506,
+      "order_id": "01a05801-cc60-710b-a9c4-7fdfc0845025",
       "simulated": false
     }
   }
