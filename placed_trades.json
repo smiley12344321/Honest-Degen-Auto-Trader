@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-31T17:43:00.499756+00:00",
+  "last_updated": "2026-08-31T22:04:04.105858+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -330,6 +330,22 @@
           "order_id": "01a05837-3058-74d6-84cf-7ef25cb052d3"
         }
       ],
+      "simulated": false
+    },
+    "155faf2b98782755": {
+      "trade_id": "155faf2b98782755",
+      "date_placed": "2026-08-31T22:04:03.662959+00:00",
+      "play": "Yankees/Angels NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-108",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26AUG312138NYYLAA",
+      "kalshi_side": "no",
+      "price_cents": 53,
+      "count_fp": "1.42",
+      "actual_risk_dollars": 0.7526,
+      "order_id": "01a059d9-d438-77a4-8940-e4892f8167cd",
       "simulated": false
     }
   }
