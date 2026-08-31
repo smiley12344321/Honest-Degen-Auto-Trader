@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-31T03:58:15.721476+00:00",
+  "last_updated": "2026-08-31T10:45:01.093557+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -176,6 +176,70 @@
       "count_fp": "0.89",
       "actual_risk_dollars": 0.4984,
       "order_id": "01a05139-8800-7e63-a1cf-d2e73f1198b9",
+      "simulated": false
+    },
+    "8eb7c9b4dada7f99": {
+      "trade_id": "8eb7c9b4dada7f99",
+      "date_placed": "2026-08-31T10:44:58.410714+00:00",
+      "play": "Mariners/Red Sox Under 8.5",
+      "sport": "MLB",
+      "market": "Game Total",
+      "sheet_odds": "-132",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBTOTAL-26AUG311845SEABOS-9",
+      "kalshi_side": "no",
+      "price_cents": 58,
+      "count_fp": "1.29",
+      "actual_risk_dollars": 0.7482,
+      "order_id": "01a0576c-1c10-7aa2-9826-3b263209993e",
+      "simulated": false
+    },
+    "4e72c3cffeed66a0": {
+      "trade_id": "4e72c3cffeed66a0",
+      "date_placed": "2026-08-31T10:44:59.543979+00:00",
+      "play": "Brewers/Cubs NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "105",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26AUG311940MILCHC",
+      "kalshi_side": "no",
+      "price_cents": 49,
+      "count_fp": "1.53",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a0576c-1ff8-77c5-b8ac-9d5e9f5d43bb",
+      "simulated": false
+    },
+    "d45fe687d988802a": {
+      "trade_id": "d45fe687d988802a",
+      "date_placed": "2026-08-31T10:45:00.117260+00:00",
+      "play": "Athletics/Rangers NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-133",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBRFI-26AUG312005ATHTEX",
+      "kalshi_side": "no",
+      "price_cents": 56,
+      "count_fp": "0.89",
+      "actual_risk_dollars": 0.4984,
+      "order_id": "01a0576c-23e0-7c8e-bb0e-9664b9c7a908",
+      "simulated": false
+    },
+    "e56e11bad4378008": {
+      "trade_id": "e56e11bad4378008",
+      "date_placed": "2026-08-31T10:45:00.608149+00:00",
+      "play": "Padres/Reds NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-113",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBRFI-26AUG311840SDCIN",
+      "kalshi_side": "no",
+      "price_cents": 51,
+      "count_fp": "0.98",
+      "actual_risk_dollars": 0.4998,
+      "order_id": "01a0576c-23e0-73d3-a767-97e8ed0e4262",
       "simulated": false
     }
   }
