@@ -123,66 +123,114 @@ class Trader:
                 skipped_count += 1
                 continue
 
-            # 3. Handling Parlays / Multi-Leg Combos / SGPs
+            # 3. Handling Parlays / Multi-Leg Combos / SGPs via Kalshi Combo Markets & RFQ
             if match.is_combo and match.combo_legs:
                 target_cents = pick.implied_cents or 50
                 target_risk = pick.units * effective_unit_size
-                placed_leg_orders = []
-                leg_errors = []
 
-                print(f"[Trader] Executing {len(match.combo_legs)}-leg parlay for: {pick.play}")
-                for leg in match.combo_legs:
-                    leg_ticker = leg["market_ticker"]
-                    leg_side = leg.get("side", "yes")
-                    leg_desc = leg.get("leg_description", leg_ticker)
-                    
-                    # 3a. Get live ask for the leg
-                    leg_ask = self.client.get_best_ask_cents(leg_ticker, side=leg_side)
-                    if leg_ask is None:
-                        leg_ask = 50
-                        print(f"[Trader] No live ask for leg '{leg_desc}', using fallback 50c.")
+                try:
+                    print(f"[Trader] Resolving parlay combo market for {len(match.combo_legs)} legs: {pick.play}")
+                    # 3a. Format legs for multivariate collection
+                    selected_markets = [
+                        {
+                            "market_ticker": leg["market_ticker"],
+                            "event_ticker": leg.get("event_ticker", leg["market_ticker"].rsplit("-", 1)[0]),
+                            "side": leg.get("side", "yes")
+                        }
+                        for leg in match.combo_legs
+                    ]
 
-                    # Sizing per leg
-                    leg_sizing = calculate_sizing(
+                    # 3b. Create or resolve combo market on Kalshi
+                    combo_res = self.client.create_or_get_combo_market(
+                        selected_markets=selected_markets,
+                        dry_run=dry_run
+                    )
+                    combo_ticker = combo_res.get("market_ticker") or combo_res.get("ticker") or combo_res.get("market", {}).get("ticker")
+                    if not combo_ticker:
+                        raise ValueError(f"Failed to obtain combo market ticker from Kalshi: {combo_res}")
+
+                    print(f"[Trader] Combo market resolved on Kalshi: {combo_ticker}")
+                    combo_shard = combo_res.get("market", {}).get("exchange_index", 0)
+
+                    # 3c. Calculate sizing
+                    sizing = calculate_sizing(
                         units=pick.units,
                         unit_size_dollars=effective_unit_size,
-                        price_cents=leg_ask,
+                        price_cents=target_cents,
                         allow_fractional=self.allow_fractional
                     )
 
-                    # Determine shard from ticker
-                    leg_shard = 3 if any(s in leg_ticker for s in ["MLB", "BASEBALL", "KBO", "NPB", "TENNIS", "USOPEN", "ATP", "WTA"]) else 0
-                    req_cents = int(round(leg_sizing["actual_risk_dollars"] * 100))
-
-                    try:
-                        self.client.ensure_shard_balance(destination_shard=leg_shard, required_cents=req_cents)
+                    # 3d. Check if the combo market already has live ask orderbook liquidity
+                    combo_ask = self.client.get_best_ask_cents(combo_ticker, side="yes")
+                    if combo_ask is not None:
+                        print(f"[Trader] Combo market has live orderbook liquidity @ {combo_ask}c. Executing direct taker order.")
+                        req_cents = int(round(sizing["actual_risk_dollars"] * 100))
+                        self.client.ensure_shard_balance(destination_shard=combo_shard, required_cents=req_cents)
                         order_res = self.client.create_order(
-                            ticker=leg_ticker,
-                            side=leg_side,
-                            count_fp=leg_sizing["count_fp"],
-                            price_cents=leg_ask,
-                            exchange_index=leg_shard,
+                            ticker=combo_ticker,
+                            side="yes",
+                            count_fp=sizing["count_fp"],
+                            price_cents=combo_ask,
+                            exchange_index=combo_shard,
                             dry_run=dry_run
                         )
-                        order_id = order_res.get("order_id") or order_res.get("client_order_id") or "sim_order"
-                        placed_leg_orders.append({
-                            "leg": leg_desc,
-                            "ticker": leg_ticker,
-                            "side": leg_side,
-                            "price_cents": leg_ask,
-                            "count_fp": leg_sizing["count_fp"],
-                            "risk_dollars": leg_sizing["actual_risk_dollars"],
-                            "order_id": order_id
-                        })
-                        print(f"[Trader] [SUCCESS] Placed parlay leg: {leg_desc} on {leg_ticker} ({leg_sizing['count_fp']} @ {leg_ask}c)")
-                    except Exception as leg_err:
-                        print(f"[Trader] [ERROR] Order placement failed for parlay leg '{leg_desc}' on {leg_ticker}: {leg_err}")
-                        leg_errors.append(f"{leg_desc}: {leg_err}")
+                        order_id = order_res.get("order_id") or order_res.get("client_order_id") or "combo_order"
+                        quote_price_cents = combo_ask
+                    else:
+                        # 3e. Request For Quote (RFQ) to solicit market maker pricing
+                        print(f"[Trader] Soliciting market maker quotes via RFQ for {combo_ticker} ({sizing['count_fp']} contracts)...")
+                        rfq_res = self.client.create_rfq(
+                            ticker=combo_ticker,
+                            contracts_fp=sizing["count_fp"],
+                            target_cost_dollars=target_risk,
+                            dry_run=dry_run
+                        )
+                        rfq_id = rfq_res.get("id") or rfq_res.get("rfq_id")
+                        if not rfq_id:
+                            raise ValueError(f"Failed to create RFQ: {rfq_res}")
 
-                if placed_leg_orders:
-                    # 3b. Record parlay to state ledger
-                    total_risk = sum(o["risk_dollars"] for o in placed_leg_orders)
-                    avg_price = int(round(sum(o["price_cents"] for o in placed_leg_orders) / len(placed_leg_orders)))
+                        # 3f. Poll for market maker quotes
+                        quotes = []
+                        for poll_attempt in range(5):
+                            time.sleep(1.0)
+                            quotes = self.client.get_rfq_quotes(rfq_id=rfq_id, dry_run=dry_run)
+                            if quotes:
+                                break
+
+                        if not quotes:
+                            print(f"[Trader] No market maker quotes returned for RFQ {rfq_id}. Skipping parlay.")
+                            self.notifier.notify_trade_skipped_unmapped(pick, "No market maker quotes returned for parlay RFQ.")
+                            skipped_count += 1
+                            continue
+
+                        # Select best quote (lowest price_cents / yes_bid)
+                        best_quote = min(quotes, key=lambda q: q.get("price_cents", q.get("yes_ask", 999)))
+                        quote_price_cents = best_quote.get("price_cents", best_quote.get("yes_ask", target_cents))
+                        quote_id = best_quote.get("quote_id") or best_quote.get("id")
+
+                        # 3g. Price / Slippage Evaluation
+                        if pick.odds_numeric is not None:
+                            is_acceptable, tgt_c, max_c, delta = is_price_acceptable(
+                                sheet_odds=pick.odds_numeric,
+                                kalshi_ask_cents=quote_price_cents,
+                                slippage_tolerance_cents=self.slippage_tolerance_cents
+                            )
+                            if not is_acceptable:
+                                print(
+                                    f"[Trader] Parlay quote rejected for {pick.play}: Quote is {quote_price_cents}¢ "
+                                    f"(Target: {tgt_c}¢, Max Allowed: {max_c}¢, Delta: +{delta}¢)"
+                                )
+                                self.notifier.notify_trade_skipped_price(pick, tgt_c, quote_price_cents, max_c)
+                                skipped_count += 1
+                                continue
+
+                        # 3h. Accept Quote
+                        req_cents = int(round(sizing["actual_risk_dollars"] * 100))
+                        self.client.ensure_shard_balance(destination_shard=combo_shard, required_cents=req_cents)
+                        self.client.accept_quote(rfq_id=rfq_id, quote_id=quote_id, side="yes", dry_run=dry_run)
+                        order_id = f"rfq_{rfq_id}_{quote_id}"
+
+                    # 3i. Record parlay to state ledger
                     self.state["trades"][pick.trade_id] = {
                         "trade_id": pick.trade_id,
                         "date_placed": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -191,33 +239,35 @@ class Trader:
                         "market": pick.market,
                         "sheet_odds": pick.odds_raw,
                         "units": pick.units,
-                        "kalshi_ticker": ", ".join(o["ticker"] for o in placed_leg_orders),
+                        "kalshi_ticker": combo_ticker,
                         "kalshi_side": "yes",
-                        "price_cents": avg_price,
-                        "count_fp": placed_leg_orders[0]["count_fp"],
-                        "actual_risk_dollars": total_risk,
-                        "order_id": ", ".join(str(o["order_id"]) for o in placed_leg_orders),
+                        "price_cents": quote_price_cents,
+                        "count_fp": sizing["count_fp"],
+                        "actual_risk_dollars": sizing["actual_risk_dollars"],
+                        "order_id": order_id,
                         "is_parlay": True,
-                        "legs": placed_leg_orders,
+                        "legs": match.combo_legs,
                         "simulated": dry_run or not self.client.is_authenticated
                     }
                     self._save_state()
 
-                    # 3c. Alert Discord
+                    # 3j. Alert Discord
                     self.notifier.notify_trade_placed(
                         pick=pick,
-                        kalshi_ticker=f"{len(placed_leg_orders)}-Leg Combo ({placed_leg_orders[0]['ticker']})",
-                        kalshi_price_cents=avg_price,
-                        count_fp=placed_leg_orders[0]["count_fp"],
-                        total_risk_dollars=total_risk,
+                        kalshi_ticker=combo_ticker,
+                        kalshi_price_cents=quote_price_cents,
+                        count_fp=sizing["count_fp"],
+                        total_risk_dollars=sizing["actual_risk_dollars"],
                         mode="simulated" if dry_run or not self.client.is_authenticated else KALSHI_ENV
                     )
                     placed_count += 1
-                    print(f"[Trader] [SUCCESS] Placed {len(placed_leg_orders)} parlay legs for: {pick.play}")
+                    print(f"[Trader] [SUCCESS] Placed parlay combo: {pick.play} on {combo_ticker} ({sizing['count_fp']} @ {quote_price_cents}c)")
                     continue
-                else:
-                    err_msg = f"Parlay execution failed for {pick.play}: {'; '.join(leg_errors)}"
-                    self.notifier.notify_error("Parlay Error", err_msg)
+
+                except Exception as e:
+                    err_msg = f"Parlay RFQ execution failed for {pick.play}: {e}"
+                    print(f"[Trader] [ERROR] {err_msg}")
+                    self.notifier.notify_error("Parlay RFQ Error", err_msg)
                     error_count += 1
                     continue
 

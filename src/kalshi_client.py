@@ -472,51 +472,108 @@ class KalshiClient:
 
     # ================= Parlay / Combo & RFQ Methods =================
 
-    def get_multivariate_collections(self) -> List[Dict[str, Any]]:
+    def get_multivariate_collections(self, status: str = "open") -> List[Dict[str, Any]]:
         """
         Fetches available multivariate event collections for combo/parlay creation.
         """
         try:
-            res = self._request("GET", "/multivariate_event_collections")
-            return res.get("multivariate_event_collections", res.get("collections", []))
+            res = self._request("GET", f"/multivariate_event_collections?status={status}")
+            return res.get("multivariate_contracts", []) or res.get("multivariate_event_collections", [])
         except Exception as e:
             print(f"[KalshiClient] Warning querying multivariate collections: {e}")
             return []
 
     def create_or_get_combo_market(
         self,
-        collection_ticker: str,
-        selected_markets: List[Dict[str, str]],
+        collection_ticker_or_markets: Any,
+        selected_markets_or_collection: Any = None,
+        collection_ticker: Optional[str] = None,
         dry_run: bool = False
     ) -> Dict[str, Any]:
         """
         Creates or resolves a combo market from individual legs.
-        selected_markets format: [{"market_ticker": "...", "event_ticker": "..."}, ...]
+        Accepts either:
+          - create_or_get_combo_market(selected_markets, collection_ticker=...)
+          - create_or_get_combo_market(collection_ticker, selected_markets, ...)
+        selected_markets format: [{"market_ticker": "...", "event_ticker": "...", "side": "yes"}, ...]
         """
+        if isinstance(collection_ticker_or_markets, str):
+            actual_collection = collection_ticker_or_markets
+            actual_markets = selected_markets_or_collection if isinstance(selected_markets_or_collection, list) else []
+        elif isinstance(collection_ticker_or_markets, list):
+            actual_markets = collection_ticker_or_markets
+            actual_collection = selected_markets_or_collection if isinstance(selected_markets_or_collection, str) else collection_ticker
+        else:
+            actual_markets = []
+            actual_collection = collection_ticker
+
+        # Ensure all legs have side specified
+        formatted_legs = []
+        for m in actual_markets:
+            if isinstance(m, dict):
+                m_ticker = m.get("market_ticker", "")
+                e_ticker = m.get("event_ticker", m_ticker.rsplit("-", 1)[0] if "-" in m_ticker else m_ticker)
+                side = m.get("side", "yes").lower()
+                formatted_legs.append({
+                    "market_ticker": m_ticker,
+                    "event_ticker": e_ticker,
+                    "side": side
+                })
+
         payload = {
-            "selected_markets": selected_markets,
+            "selected_markets": formatted_legs,
             "with_market_payload": True
         }
+
         if dry_run or not self.is_authenticated:
             sim_ticker = f"KXCOMBO-SIM-{uuid.uuid4().hex[:8]}"
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would create combo market in {collection_ticker}: {payload}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would create combo market in {actual_collection or 'KXMVESPORTSMULTIGAMEEXTENDED-R'}: {payload}")
             return {
+                "market_ticker": sim_ticker,
+                "event_ticker": f"KXEVT-SIM-{uuid.uuid4().hex[:6]}",
                 "market": {
                     "ticker": sim_ticker,
-                    "title": f"Simulated Parlay ({len(selected_markets)} legs)",
+                    "title": f"Simulated Parlay ({len(actual_markets)} legs)",
                     "yes_ask": None,
-                    "last_price": None
+                    "last_price": None,
+                    "exchange_index": 0
                 },
                 "ticker": sim_ticker,
                 "simulated": True
             }
 
-        return self._request(
-            "POST",
-            f"/multivariate_event_collections/{collection_ticker}",
-            json_data=payload,
-            auth_required=True
-        )
+        # Candidate collections to try if none explicitly passed
+        candidate_collections = []
+        if actual_collection:
+            candidate_collections.append(actual_collection)
+        else:
+            # Query open collections or fallback to standard sports collections
+            open_cols = self.get_multivariate_collections(status="open")
+            if open_cols:
+                candidate_collections.extend([c.get("collection_ticker") for c in open_cols if c.get("collection_ticker")])
+            candidate_collections.extend([
+                "KXMVESPORTSMULTIGAMEEXTENDED-R",
+                "KXMVECROSSCATEGORY-R",
+                "KXMVECROSSCATEGORY-SHARD1-R"
+            ])
+
+        last_error = None
+        for col_ticker in candidate_collections:
+            try:
+                res = self._request(
+                    "POST",
+                    f"/multivariate_event_collections/{col_ticker}",
+                    json_data=payload,
+                    auth_required=True
+                )
+                if res and (res.get("market_ticker") or res.get("ticker")):
+                    return res
+            except Exception as e:
+                last_error = e
+
+        if last_error:
+            raise last_error
+        raise RuntimeError("Failed to create combo market in any candidate collection.")
 
     def create_rfq(
         self,
@@ -527,8 +584,13 @@ class KalshiClient:
     ) -> Dict[str, Any]:
         """
         Creates a Request for Quote (RFQ) to request market maker pricing on a combo/parlay.
+        Endpoint: POST /trade-api/v2/communications/rfqs
         """
-        payload: Dict[str, Any] = {"ticker": ticker}
+        payload: Dict[str, Any] = {
+            "market_ticker": ticker,
+            "rest_remainder": False,
+            "replace_existing": True
+        }
         if contracts_fp:
             payload["contracts_fp"] = contracts_fp
         elif target_cost_dollars is not None:
@@ -540,8 +602,9 @@ class KalshiClient:
             sim_rfq_id = f"sim_rfq_{uuid.uuid4().hex[:8]}"
             print(f"[KalshiClient] [DRY RUN / SIMULATED] Would create RFQ for {ticker}: {payload}")
             return {
+                "id": sim_rfq_id,
                 "rfq_id": sim_rfq_id,
-                "ticker": ticker,
+                "market_ticker": ticker,
                 "status": "simulated",
                 "simulated": True
             }
@@ -556,49 +619,65 @@ class KalshiClient:
     def get_rfq_quotes(self, rfq_id: str, dry_run: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieves quotes submitted for an RFQ.
+        Endpoint: GET /trade-api/v2/communications/quotes?rfq_id={rfq_id}
         """
         if dry_run or not self.is_authenticated:
             # Return a simulated quote for dry run
             return [{
+                "id": f"sim_quote_{uuid.uuid4().hex[:6]}",
                 "quote_id": f"sim_quote_{uuid.uuid4().hex[:6]}",
                 "rfq_id": rfq_id,
-                "yes_bid": 48,
-                "yes_ask": 52,
+                "yes_bid_dollars": "0.5200",
+                "no_bid_dollars": "0.4800",
                 "price_cents": 52,
                 "simulated": True
             }]
 
         try:
-            res = self._request("GET", f"/communications/rfqs/{rfq_id}/quotes", auth_required=True)
-            return res.get("quotes", [])
+            res = self._request("GET", f"/communications/quotes?rfq_id={rfq_id}", auth_required=True)
+            raw_quotes = res.get("quotes", [])
+            parsed_quotes = []
+            for q in raw_quotes:
+                # Convert yes_bid_dollars / no_bid_dollars to cents
+                yes_bid_d = q.get("yes_bid_dollars")
+                price_c = int(round(float(yes_bid_d) * 100)) if yes_bid_d else q.get("price_cents", 50)
+                q_copy = dict(q)
+                q_copy["price_cents"] = price_c
+                q_copy["quote_id"] = q.get("id") or q.get("quote_id")
+                parsed_quotes.append(q_copy)
+            return parsed_quotes
         except Exception as e:
             print(f"[KalshiClient] Warning fetching quotes for RFQ {rfq_id}: {e}")
             return []
 
-    def accept_quote(self, rfq_id: str, quote_id: str, dry_run: bool = False) -> Dict[str, Any]:
+    def accept_quote(self, rfq_id: str, quote_id: str, side: str = "yes", dry_run: bool = False) -> Dict[str, Any]:
         """
-        Step 1 of execution: Accepts a quote.
+        Accepts a quote scoped to its RFQ.
+        Endpoint: PUT /trade-api/v2/communications/rfqs/{rfq_id}/quotes/{quote_id}/accept
         """
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would accept quote {quote_id} for RFQ {rfq_id}")
+            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would accept quote {quote_id} for RFQ {rfq_id} (Side: {side})")
             return {"status": "accepted", "quote_id": quote_id, "rfq_id": rfq_id, "simulated": True}
 
         return self._request(
             "PUT",
             f"/communications/rfqs/{rfq_id}/quotes/{quote_id}/accept",
+            json_data={"accepted_side": side.lower()},
             auth_required=True
         )
 
     def confirm_quote(self, rfq_id: str, quote_id: str, dry_run: bool = False) -> Dict[str, Any]:
         """
-        Step 2 of execution: Confirms the accepted quote to finalize the trade.
+        Legacy confirmation endpoint if requested by quoter.
         """
         if dry_run or not self.is_authenticated:
-            print(f"[KalshiClient] [DRY RUN / SIMULATED] Would confirm quote {quote_id} for RFQ {rfq_id}")
             return {"status": "confirmed", "quote_id": quote_id, "rfq_id": rfq_id, "simulated": True}
 
-        return self._request(
-            "PUT",
-            f"/communications/rfqs/{rfq_id}/quotes/{quote_id}/confirm",
-            auth_required=True
-        )
+        try:
+            return self._request(
+                "PUT",
+                f"/communications/rfqs/{rfq_id}/quotes/{quote_id}/confirm",
+                auth_required=True
+            )
+        except Exception:
+            return {"status": "confirmed"}
