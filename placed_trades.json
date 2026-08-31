@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-31T13:28:30.028480+00:00",
+  "last_updated": "2026-08-31T14:26:47.989099+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -256,6 +256,80 @@
       "count_fp": "1.39",
       "actual_risk_dollars": 0.7506,
       "order_id": "01a05801-cc60-710b-a9c4-7fdfc0845025",
+      "simulated": false
+    },
+    "fef76cd66d96a028": {
+      "trade_id": "fef76cd66d96a028",
+      "date_placed": "2026-08-31T14:26:46.523614+00:00",
+      "play": "Rinderknech ML + Tirante ML",
+      "sport": "Tennis",
+      "market": "2-Leg Parlay",
+      "sheet_odds": "-124",
+      "units": 2.5,
+      "kalshi_ticker": "KXATPMATCH-26SEP02MUNRIN-RIN, KXATPMATCH-26AUG30TIRMAN-TIR",
+      "kalshi_side": "yes",
+      "price_cents": 38,
+      "count_fp": "1.89",
+      "actual_risk_dollars": 2.4975,
+      "order_id": "01a05837-2c70-7e72-a970-747d715a2977, 01a05837-2c70-712d-840a-a61e1276501c",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg": "Rinderknech ML",
+          "ticker": "KXATPMATCH-26SEP02MUNRIN-RIN",
+          "side": "yes",
+          "price_cents": 66,
+          "count_fp": "1.89",
+          "risk_dollars": 1.2474,
+          "order_id": "01a05837-2c70-7e72-a970-747d715a2977"
+        },
+        {
+          "leg": "Tirante ML",
+          "ticker": "KXATPMATCH-26AUG30TIRMAN-TIR",
+          "side": "yes",
+          "price_cents": 9,
+          "count_fp": "13.89",
+          "risk_dollars": 1.2501,
+          "order_id": "01a05837-2c70-712d-840a-a61e1276501c"
+        }
+      ],
+      "simulated": false
+    },
+    "f0f528861ba3c000": {
+      "trade_id": "f0f528861ba3c000",
+      "date_placed": "2026-08-31T14:26:47.672914+00:00",
+      "play": "Barcelona ML + Rayo 3+ Corners",
+      "sport": "Soccer",
+      "market": "2-Leg SGP",
+      "sheet_odds": "-130",
+      "units": 1.5,
+      "kalshi_ticker": "KXLALIGAGAME-26AUG31BARRVC-BAR, KXLALIGATCORNERS-26AUG31BARRVC-RVC4",
+      "kalshi_side": "yes",
+      "price_cents": 66,
+      "count_fp": "0.83",
+      "actual_risk_dollars": 1.4973,
+      "order_id": "01a05837-3058-76f5-92c9-54c79ba45e52, 01a05837-3058-74d6-84cf-7ef25cb052d3",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg": "Barcelona ML",
+          "ticker": "KXLALIGAGAME-26AUG31BARRVC-BAR",
+          "side": "yes",
+          "price_cents": 90,
+          "count_fp": "0.83",
+          "risk_dollars": 0.747,
+          "order_id": "01a05837-3058-76f5-92c9-54c79ba45e52"
+        },
+        {
+          "leg": "Rayo 3+ Corners",
+          "ticker": "KXLALIGATCORNERS-26AUG31BARRVC-RVC4",
+          "side": "yes",
+          "price_cents": 41,
+          "count_fp": "1.83",
+          "risk_dollars": 0.7503,
+          "order_id": "01a05837-3058-74d6-84cf-7ef25cb052d3"
+        }
+      ],
       "simulated": false
     }
   }
