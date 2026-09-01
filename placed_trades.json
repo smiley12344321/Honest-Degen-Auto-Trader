@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-01T19:37:37.019689+00:00",
+  "last_updated": "2026-09-01T20:45:20.243225+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -394,6 +394,22 @@
       "count_fp": "0.88",
       "actual_risk_dollars": 0.5016,
       "order_id": "01a05cd9-8778-7e26-a179-87f852349d93",
+      "simulated": false
+    },
+    "654b8697de43e454": {
+      "trade_id": "654b8697de43e454",
+      "date_placed": "2026-09-01T20:45:19.938889+00:00",
+      "play": "KT Wiz ML",
+      "sport": "KBO",
+      "market": "Moneyline",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXKBOGAME-26SEP020530HANKTW-KTW",
+      "kalshi_side": "yes",
+      "price_cents": 52,
+      "count_fp": "1.44",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "01a05eb8-1b18-7cd7-945c-b0b5b60d0d50",
       "simulated": false
     }
   }
