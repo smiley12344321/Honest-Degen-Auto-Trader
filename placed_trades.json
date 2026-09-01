@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-01T06:35:01.948014+00:00",
+  "last_updated": "2026-09-01T12:02:35.831211+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -378,6 +378,22 @@
       "count_fp": "1.27",
       "actual_risk_dollars": 0.7493,
       "order_id": "01a05bad-a208-7f3c-89fe-29dc7cd20827",
+      "simulated": false
+    },
+    "95ceb305004d797f": {
+      "trade_id": "95ceb305004d797f",
+      "date_placed": "2026-09-01T12:02:35.318853+00:00",
+      "play": "Phillies/Diamondbacks NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-125",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBRFI-26SEP012140PHIAZ",
+      "kalshi_side": "no",
+      "price_cents": 57,
+      "count_fp": "0.88",
+      "actual_risk_dollars": 0.5016,
+      "order_id": "01a05cd9-8778-7e26-a179-87f852349d93",
       "simulated": false
     }
   }
