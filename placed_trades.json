@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-01T20:45:20.243225+00:00",
+  "last_updated": "2026-09-01T22:04:15.749397+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -410,6 +410,22 @@
       "count_fp": "1.44",
       "actual_risk_dollars": 0.7488,
       "order_id": "01a05eb8-1b18-7cd7-945c-b0b5b60d0d50",
+      "simulated": false
+    },
+    "5912c28214c8749a": {
+      "trade_id": "5912c28214c8749a",
+      "date_placed": "2026-09-01T22:04:15.373998+00:00",
+      "play": "Giants/Pirates NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-140",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBRFI-26SEP011840SFPIT",
+      "kalshi_side": "no",
+      "price_cents": 58,
+      "count_fp": "0.86",
+      "actual_risk_dollars": 0.4988,
+      "order_id": "01a05f00-5f18-7edc-881e-b3ce15fe2dfb",
       "simulated": false
     }
   }
