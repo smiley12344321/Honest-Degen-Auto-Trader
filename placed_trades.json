@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-01T01:18:32.468174+00:00",
+  "last_updated": "2026-09-01T06:35:01.948014+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -346,6 +346,38 @@
       "count_fp": "1.42",
       "actual_risk_dollars": 0.7526,
       "order_id": "01a059d9-d438-77a4-8940-e4892f8167cd",
+      "simulated": false
+    },
+    "844f563145ab4aa7": {
+      "trade_id": "844f563145ab4aa7",
+      "date_placed": "2026-09-01T06:34:59.694140+00:00",
+      "play": "Tigers ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-115",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP011940DETMIN-DET",
+      "kalshi_side": "yes",
+      "price_cents": 53,
+      "count_fp": "1.42",
+      "actual_risk_dollars": 0.7526,
+      "order_id": "01a05bad-9a38-72ec-81ca-8eb38378df18",
+      "simulated": false
+    },
+    "7eeeae2a37600a9c": {
+      "trade_id": "7eeeae2a37600a9c",
+      "date_placed": "2026-09-01T06:35:01.355426+00:00",
+      "play": "Seibu Lions ML",
+      "sport": "NPB",
+      "market": "Moneyline",
+      "sheet_odds": "-130",
+      "units": 1.5,
+      "kalshi_ticker": "KXNPBGAME-26SEP010500SAICHI-SAI",
+      "kalshi_side": "yes",
+      "price_cents": 59,
+      "count_fp": "1.27",
+      "actual_risk_dollars": 0.7493,
+      "order_id": "01a05bad-a208-7f3c-89fe-29dc7cd20827",
       "simulated": false
     }
   }
