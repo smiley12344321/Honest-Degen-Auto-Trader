@@ -191,22 +191,27 @@ class Trader:
                             raise ValueError(f"Failed to create RFQ: {rfq_res}")
 
                         # 3f. Poll for market maker quotes
-                        quotes = []
-                        for poll_attempt in range(5):
+                        valid_quotes = []
+                        for poll_attempt in range(8):
                             time.sleep(1.0)
                             quotes = self.client.get_rfq_quotes(rfq_id=rfq_id, dry_run=dry_run)
-                            if quotes:
+                            valid_quotes = [
+                                q for q in quotes
+                                if q.get("status") in ("open", "simulated", None)
+                                and q.get("yes_price_cents", 0) >= 1
+                            ]
+                            if valid_quotes:
                                 break
 
-                        if not quotes:
-                            print(f"[Trader] No market maker quotes returned for RFQ {rfq_id}. Skipping parlay.")
-                            self.notifier.notify_trade_skipped_unmapped(pick, "No market maker quotes returned for parlay RFQ.")
+                        if not valid_quotes:
+                            print(f"[Trader] No valid market maker YES quotes returned for RFQ {rfq_id}. Skipping parlay.")
+                            self.notifier.notify_trade_skipped_unmapped(pick, "No valid market maker YES quotes returned for parlay RFQ.")
                             skipped_count += 1
                             continue
 
-                        # Select best quote (lowest price_cents / yes_bid)
-                        best_quote = min(quotes, key=lambda q: q.get("price_cents", q.get("yes_ask", 999)))
-                        quote_price_cents = best_quote.get("price_cents", best_quote.get("yes_ask", target_cents))
+                        # Select best quote (lowest yes_price_cents)
+                        best_quote = min(valid_quotes, key=lambda q: q.get("yes_price_cents", 999))
+                        quote_price_cents = best_quote.get("yes_price_cents", target_cents)
                         quote_id = best_quote.get("quote_id") or best_quote.get("id")
 
                         # 3g. Price / Slippage Evaluation

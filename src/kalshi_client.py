@@ -642,7 +642,10 @@ class KalshiClient:
                 "rfq_id": rfq_id,
                 "yes_bid_dollars": "0.5200",
                 "no_bid_dollars": "0.4800",
+                "yes_price_cents": 52,
+                "no_price_cents": 48,
                 "price_cents": 52,
+                "status": "open",
                 "simulated": True
             }]
 
@@ -655,11 +658,15 @@ class KalshiClient:
             raw_quotes = res.get("quotes", [])
             parsed_quotes = []
             for q in raw_quotes:
-                # Convert yes_bid_dollars / no_bid_dollars to cents
                 yes_bid_d = q.get("yes_bid_dollars")
-                price_c = int(round(float(yes_bid_d) * 100)) if yes_bid_d else q.get("price_cents", 50)
+                no_bid_d = q.get("no_bid_dollars")
+                yes_price_c = int(round(float(yes_bid_d) * 100)) if yes_bid_d and float(yes_bid_d) > 0 else 0
+                no_price_c = int(round(float(no_bid_d) * 100)) if no_bid_d and float(no_bid_d) > 0 else 0
+
                 q_copy = dict(q)
-                q_copy["price_cents"] = price_c
+                q_copy["yes_price_cents"] = yes_price_c
+                q_copy["no_price_cents"] = no_price_c
+                q_copy["price_cents"] = yes_price_c if yes_price_c > 0 else no_price_c
                 q_copy["quote_id"] = q.get("id") or q.get("quote_id")
                 parsed_quotes.append(q_copy)
             return parsed_quotes
