@@ -632,7 +632,7 @@ class KalshiClient:
     def get_rfq_quotes(self, rfq_id: str, dry_run: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieves quotes submitted for an RFQ.
-        Endpoint: GET /trade-api/v2/communications/quotes?rfq_id={rfq_id}
+        Endpoint: GET /trade-api/v2/communications/quotes?rfq_id={rfq_id}&rfq_user_filter=self
         """
         if dry_run or not self.is_authenticated:
             # Return a simulated quote for dry run
@@ -647,7 +647,11 @@ class KalshiClient:
             }]
 
         try:
-            res = self._request("GET", f"/communications/quotes?rfq_id={rfq_id}", auth_required=True)
+            params = {
+                "rfq_id": rfq_id,
+                "rfq_user_filter": "self"
+            }
+            res = self._request("GET", "/communications/quotes", params=params, auth_required=True)
             raw_quotes = res.get("quotes", [])
             parsed_quotes = []
             for q in raw_quotes:
