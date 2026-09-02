@@ -148,15 +148,21 @@ class MarketMatcher:
                 elif "btts" in leg_lower or "both team" in leg_lower:
                     sub_market = "BTTS"
                 elif "f5" in leg_lower or "first 5" in leg_lower:
-                    if "+" in leg_lower or "-" in leg_lower or "spread" in leg_lower:
+                    if "total" in leg_lower or "over" in leg_lower or "under" in leg_lower or re.search(r"[ou]\s*\d", leg_lower):
+                        sub_market = "First 5 Total"
+                    elif "+" in leg_lower or (re.search(r"-\d", leg_lower) and not re.search(r"[ou]\d", leg_lower) and "spread" in leg_lower):
                         sub_market = "First 5 Spread"
+                    elif "+" in leg_lower or "-" in leg_lower:
+                        sub_market = "First 5 Spread"
+                    elif "ml" in leg_lower or "win" in leg_lower:
+                        sub_market = "First 5 Moneyline"
                     else:
                         sub_market = "First 5 Moneyline"
                 elif "f3" in leg_lower or "first 3" in leg_lower:
                     sub_market = "First 3 Moneyline"
                 elif "nrfi" in leg_lower or "yrfi" in leg_lower or "first inning" in leg_lower:
                     sub_market = "NRFI"
-                elif "total" in leg_lower or "over" in leg_lower or "under" in leg_lower:
+                elif "total" in leg_lower or "over" in leg_lower or "under" in leg_lower or re.search(r"\b[ou]\d", leg_lower):
                     sub_market = "Game Total"
                 elif "+" in leg_lower or (re.search(r"-\d", leg_lower) and not re.search(r"ml", leg_lower)):
                     sub_market = "Spread"
@@ -275,11 +281,12 @@ class MarketMatcher:
         is_nrfi = "nrfi" in market_lower or "nrfi" in play_lower or "first inning" in market_lower or "1st inning" in market_lower or "yrfi" in market_lower or "yrfi" in play_lower
         is_corner = "corner" in market_lower or "corner" in play_lower
         is_btts = "btts" in market_lower or "btts" in play_lower or "both team" in play_lower
-        is_f5 = "f5" in market_lower or "f5" in play_lower or "first 5" in market_lower
+        is_f5_total = (("f5" in market_lower or "first 5" in market_lower or "f5" in play_lower) and ("total" in market_lower or "over" in play_lower or "under" in play_lower or re.search(r"[ou]\s*\d", play_lower)))
+        is_f5 = ("f5" in market_lower or "f5" in play_lower or "first 5" in market_lower) and not is_f5_total
         is_f3 = "f3" in market_lower or "f3" in play_lower or "first 3" in market_lower
-        is_spread = ("spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or ("+" in play_lower and not is_corner) or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)))) and not is_corner and not is_btts
-        is_ml = ("moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower) and not is_corner and not is_btts
-        is_total = ("total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower or "goals" in market_lower or re.search(r"\b[ou]\d+", play_lower)) and not is_corner and not is_btts
+        is_spread = ("spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or ("+" in play_lower and not is_corner) or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and not is_f5_total and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)))) and not is_corner and not is_btts
+        is_ml = ("moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower) and not is_corner and not is_btts and not is_f5_total
+        is_total = (("total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower or "goals" in market_lower or re.search(r"\b[ou]\d+", play_lower)) or is_f5_total) and not is_corner and not is_btts
         is_explicit_no = play_lower.startswith("no ") or play_lower.startswith("no ·") or "to win: no" in play_lower
 
         # Search through live events for best match
@@ -323,9 +330,11 @@ class MarketMatcher:
                 score += 80
             elif is_btts and ("BTTS" in et or "btts" in title or "both team" in title):
                 score += 80
+            elif is_f5_total and ("F5TOTAL" in et or "first 5 total" in title):
+                score += 120
             elif is_f5 and is_spread and ("F5SPREAD" in et or "first 5 spread" in title):
                 score += 80
-            elif is_f5 and not is_spread and ("F5" in et or "first 5" in title) and "SPREAD" not in et:
+            elif is_f5 and not is_spread and ("F5" in et or "first 5" in title) and "SPREAD" not in et and "TOTAL" not in et:
                 score += 50
             elif is_f3 and ("F3" in et or "first 3" in title):
                 score += 50
@@ -479,7 +488,7 @@ class MarketMatcher:
                     m_title = mkt.get("title", "").lower()
                     m_ticker = mkt.get("ticker", "")
                     if "total" in m_title or "over" in m_title or "under" in m_title or "points" in m_title or "runs" in m_title or "games" in m_title or "goals" in m_title:
-                        m_num_match = re.search(r"\b(\d+(?:\.\d+)?)\b", m_title) or re.search(r"-(\d+)$", m_ticker)
+                        m_num_match = re.search(r"(?:over|under|total)\s*(\d+(?:\.\d+)?)", m_title, flags=re.IGNORECASE) or re.search(r"(\d+(?:\.\d+)?)\s*(?:runs?|goals?|points?)", m_title, flags=re.IGNORECASE) or re.search(r"-(\d+)$", m_ticker)
                         m_num = float(m_num_match.group(1)) if m_num_match else None
                         candidate_markets.append((mkt, m_num))
 

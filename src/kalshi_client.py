@@ -214,6 +214,8 @@ class KalshiClient:
         Retrieves the best available ask price in cents for 'yes' or 'no'
         by inspecting the live orderbook (Taker price for immediate fills).
         """
+        if ticker.startswith("KXCOMBO-SIM"):
+            return None
         try:
             ob = self.get_orderbook(ticker, depth=5)
             ob_fp = ob.get("orderbook_fp", ob) if isinstance(ob, dict) else {}
@@ -485,27 +487,34 @@ class KalshiClient:
 
     def create_or_get_combo_market(
         self,
-        collection_ticker_or_markets: Any,
-        selected_markets_or_collection: Any = None,
+        selected_markets: Optional[Any] = None,
         collection_ticker: Optional[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
+        *args: Any,
+        **kwargs: Any
     ) -> Dict[str, Any]:
         """
         Creates or resolves a combo market from individual legs.
-        Accepts either:
-          - create_or_get_combo_market(selected_markets, collection_ticker=...)
-          - create_or_get_combo_market(collection_ticker, selected_markets, ...)
+        Accepts:
+          - create_or_get_combo_market(selected_markets=[...], collection_ticker=...)
+          - create_or_get_combo_market([...], collection_ticker=...)
+          - create_or_get_combo_market("KX...", [...])
         selected_markets format: [{"market_ticker": "...", "event_ticker": "...", "side": "yes"}, ...]
         """
-        if isinstance(collection_ticker_or_markets, str):
-            actual_collection = collection_ticker_or_markets
-            actual_markets = selected_markets_or_collection if isinstance(selected_markets_or_collection, list) else []
-        elif isinstance(collection_ticker_or_markets, list):
-            actual_markets = collection_ticker_or_markets
-            actual_collection = selected_markets_or_collection if isinstance(selected_markets_or_collection, str) else collection_ticker
+        if isinstance(selected_markets, str):
+            actual_collection = selected_markets
+            if isinstance(collection_ticker, list):
+                actual_markets = collection_ticker
+            elif args and isinstance(args[0], list):
+                actual_markets = args[0]
+            else:
+                actual_markets = kwargs.get("selected_markets", [])
         else:
+            actual_markets = selected_markets or kwargs.get("selected_markets") or []
+            actual_collection = collection_ticker or kwargs.get("collection_ticker")
+
+        if not isinstance(actual_markets, list):
             actual_markets = []
-            actual_collection = collection_ticker
 
         # Ensure all legs have side specified
         formatted_legs = []
