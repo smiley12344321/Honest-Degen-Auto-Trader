@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-02T17:24:17.246458+00:00",
+  "last_updated": "2026-09-02T19:56:08.095441+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -97,6 +97,22 @@
       "count_fp": "1.23",
       "actual_risk_dollars": 0.7503,
       "order_id": "01a06326-69e8-7b8d-8187-1977af0d60fa",
+      "simulated": false
+    },
+    "187c7e2804e844b4": {
+      "trade_id": "187c7e2804e844b4",
+      "date_placed": "2026-09-02T19:56:07.776467+00:00",
+      "play": "Brewers/Cubs NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-115",
+      "units": 2.0,
+      "kalshi_ticker": "KXMLBRFI-26SEP021940MILCHC",
+      "kalshi_side": "no",
+      "price_cents": 54,
+      "count_fp": "1.85",
+      "actual_risk_dollars": 0.999,
+      "order_id": "01a063b1-6bd8-757d-bf24-4f5c69163aae",
       "simulated": false
     }
   }
