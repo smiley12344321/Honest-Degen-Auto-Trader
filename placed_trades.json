@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-01T22:04:15.749397+00:00",
+  "last_updated": "2026-09-02T00:14:51.794565+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -426,6 +426,22 @@
       "count_fp": "0.86",
       "actual_risk_dollars": 0.4988,
       "order_id": "01a05f00-5f18-7edc-881e-b3ce15fe2dfb",
+      "simulated": false
+    },
+    "f6dfcd29ea2a5044": {
+      "trade_id": "f6dfcd29ea2a5044",
+      "date_placed": "2026-09-02T00:14:51.190165+00:00",
+      "play": "Shapovalov ML",
+      "sport": "Tennis",
+      "market": "Moneyline",
+      "sheet_odds": "-135",
+      "units": 1.5,
+      "kalshi_ticker": "KXATPMATCH-26SEP02SHAVAN-SHA",
+      "kalshi_side": "yes",
+      "price_cents": 57,
+      "count_fp": "1.32",
+      "actual_risk_dollars": 0.7524,
+      "order_id": "01a05f77-f078-774a-a75b-60063f90b67b",
       "simulated": false
     }
   }
