@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-02T00:14:51.794565+00:00",
+  "last_updated": "2026-09-02T04:43:09.431697+00:00",
   "trades": {
     "695c2c51771682a4": {
       "trade_id": "695c2c51771682a4",
@@ -442,6 +442,22 @@
       "count_fp": "1.32",
       "actual_risk_dollars": 0.7524,
       "order_id": "01a05f77-f078-774a-a75b-60063f90b67b",
+      "simulated": false
+    },
+    "6b813eacc9f4ed21": {
+      "trade_id": "6b813eacc9f4ed21",
+      "date_placed": "2026-09-02T04:43:06.980156+00:00",
+      "play": "Marlins/Royals NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-104",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26SEP021940MIAKC",
+      "kalshi_side": "no",
+      "price_cents": 53,
+      "count_fp": "1.42",
+      "actual_risk_dollars": 0.7526,
+      "order_id": "01a0606d-8790-7735-a4d6-63dba42b78e0",
       "simulated": false
     }
   }
