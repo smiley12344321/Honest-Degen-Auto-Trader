@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-02T22:00:38.205390+00:00",
+  "last_updated": "2026-09-02T22:32:11.068009+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -202,6 +202,55 @@
           "market_title": "Boston wins first 5 innings by over 2.5 runs?"
         }
       ],
+      "simulated": false
+    },
+    "929b96c34268c89d": {
+      "trade_id": "929b96c34268c89d",
+      "date_placed": "2026-09-02T22:32:10.499783+00:00",
+      "play": "MIL/CHC F5 U5.5 + DET F5 +0.5",
+      "sport": "MLB",
+      "market": "2-Market Combo",
+      "sheet_odds": "-108",
+      "units": 1.5,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026906D0F48872-CBC216B2DBD",
+      "kalshi_side": "yes",
+      "price_cents": 10,
+      "count_fp": "1.44",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "rfq_38008625-c4fb-4e34-99dd-e8817922fbf6_05fb35fb-9b63-450f-8a64-21282428d1f3",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "MIL/CHC F5 U5.5",
+          "market_ticker": "KXMLBF5TOTAL-26SEP021940MILCHC-5",
+          "event_ticker": "KXMLBF5TOTAL-26SEP021940MILCHC",
+          "side": "no",
+          "market_title": "First 5 innings: Over 4.5 runs"
+        },
+        {
+          "leg_description": "DET F5 +0.5",
+          "market_ticker": "KXMLBF5SPREAD-26SEP021940DETMIN-MIN3",
+          "event_ticker": "KXMLBF5SPREAD-26SEP021940DETMIN",
+          "side": "no",
+          "market_title": "Minnesota wins first 5 innings by over 2.5 runs?"
+        }
+      ],
+      "simulated": false
+    },
+    "5e3998b9fcdd0e4d": {
+      "trade_id": "5e3998b9fcdd0e4d",
+      "date_placed": "2026-09-02T22:32:10.899434+00:00",
+      "play": "Hanwha/KT Wiz Under 10",
+      "sport": "KBO",
+      "market": "Total",
+      "sheet_odds": "-129",
+      "units": 1.5,
+      "kalshi_ticker": "KXKBOTOTAL-26SEP030530HANKTW-10",
+      "kalshi_side": "no",
+      "price_cents": 51,
+      "count_fp": "1.47",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a06440-4a10-7877-b92d-c01ca2d301ee",
       "simulated": false
     }
   }
