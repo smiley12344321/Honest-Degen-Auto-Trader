@@ -163,21 +163,43 @@ class Trader:
 
                     # 3d. Check if the combo market already has live ask orderbook liquidity
                     combo_ask = self.client.get_best_ask_cents(combo_ticker, side="yes")
+                    order_placed = False
+
                     if combo_ask is not None and 1 <= combo_ask <= 99:
-                        print(f"[Trader] Combo market has live orderbook liquidity @ {combo_ask}c. Executing direct taker order.")
-                        req_cents = int(round(sizing["actual_risk_dollars"] * 100))
-                        self.client.ensure_shard_balance(destination_shard=combo_shard, required_cents=req_cents)
-                        order_res = self.client.create_order(
-                            ticker=combo_ticker,
-                            side="yes",
-                            count_fp=sizing["count_fp"],
-                            price_cents=combo_ask,
-                            exchange_index=combo_shard,
-                            dry_run=dry_run
-                        )
-                        order_id = order_res.get("order_id") or order_res.get("client_order_id") or "combo_order"
-                        quote_price_cents = combo_ask
-                    else:
+                        # Strict price evaluation against sheet target odds for direct orderbook taker
+                        is_acceptable = True
+                        tgt_c = target_cents
+                        max_c = min(99, target_cents + self.slippage_tolerance_cents)
+                        delta = combo_ask - target_cents
+
+                        if pick.odds_numeric is not None:
+                            is_acceptable, tgt_c, max_c, delta = is_price_acceptable(
+                                sheet_odds=pick.odds_numeric,
+                                kalshi_ask_cents=combo_ask,
+                                slippage_tolerance_cents=self.slippage_tolerance_cents
+                            )
+                        elif pick.implied_cents is not None:
+                            is_acceptable = combo_ask <= max_c
+
+                        if is_acceptable:
+                            print(f"[Trader] Combo market has live orderbook liquidity @ {combo_ask}c (Target: {tgt_c}c, Max: {max_c}c). Executing direct taker order.")
+                            req_cents = int(round(sizing["actual_risk_dollars"] * 100))
+                            self.client.ensure_shard_balance(destination_shard=combo_shard, required_cents=req_cents)
+                            order_res = self.client.create_order(
+                                ticker=combo_ticker,
+                                side="yes",
+                                count_fp=sizing["count_fp"],
+                                price_cents=combo_ask,
+                                exchange_index=combo_shard,
+                                dry_run=dry_run
+                            )
+                            order_id = order_res.get("order_id") or order_res.get("client_order_id") or "combo_order"
+                            quote_price_cents = combo_ask
+                            order_placed = True
+                        else:
+                            print(f"[Trader] Orderbook ask {combo_ask}c exceeds max allowed price {max_c}c (Target: {tgt_c}c). Soliciting RFQ instead.")
+
+                    if not order_placed:
                         # 3e. Request For Quote (RFQ) to solicit market maker pricing
                         print(f"[Trader] Soliciting market maker quotes via RFQ for {combo_ticker} ({sizing['count_fp']} contracts)...")
                         rfq_res = self.client.create_rfq(
@@ -214,21 +236,29 @@ class Trader:
                         quote_price_cents = best_quote.get("yes_price_cents", target_cents)
                         quote_id = best_quote.get("quote_id") or best_quote.get("id")
 
-                        # 3g. Price / Slippage Evaluation
+                        # 3g. Strict Price / Slippage Evaluation against sheet target odds
+                        is_acceptable = True
+                        tgt_c = target_cents
+                        max_c = min(99, target_cents + self.slippage_tolerance_cents)
+                        delta = quote_price_cents - target_cents
+
                         if pick.odds_numeric is not None:
                             is_acceptable, tgt_c, max_c, delta = is_price_acceptable(
                                 sheet_odds=pick.odds_numeric,
                                 kalshi_ask_cents=quote_price_cents,
                                 slippage_tolerance_cents=self.slippage_tolerance_cents
                             )
-                            if not is_acceptable:
-                                print(
-                                    f"[Trader] Parlay quote rejected for {pick.play}: Quote is {quote_price_cents}¢ "
-                                    f"(Target: {tgt_c}¢, Max Allowed: {max_c}¢, Delta: +{delta}¢)"
-                                )
-                                self.notifier.notify_trade_skipped_price(pick, tgt_c, quote_price_cents, max_c)
-                                skipped_count += 1
-                                continue
+                        elif pick.implied_cents is not None:
+                            is_acceptable = quote_price_cents <= max_c
+
+                        if not is_acceptable or quote_price_cents < 1 or quote_price_cents > 99:
+                            print(
+                                f"[Trader] Parlay quote REJECTED for {pick.play}: Quote is {quote_price_cents}¢ "
+                                f"(Target: {tgt_c}¢, Max Allowed: {max_c}¢, Delta: +{delta}¢)"
+                            )
+                            self.notifier.notify_trade_skipped_price(pick, tgt_c, quote_price_cents, max_c)
+                            skipped_count += 1
+                            continue
 
                         # 3h. Accept Quote
                         req_cents = int(round(sizing["actual_risk_dollars"] * 100))

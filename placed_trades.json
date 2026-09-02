@@ -115,39 +115,6 @@
       "order_id": "01a063b1-6bd8-757d-bf24-4f5c69163aae",
       "simulated": false
     },
-    "929b96c34268c89d": {
-      "trade_id": "929b96c34268c89d",
-      "date_placed": "2026-09-02T21:32:33.699703+00:00",
-      "play": "MIL/CHC F5 U5.5 + DET F5 +0.5",
-      "sport": "MLB",
-      "market": "2-Market Combo",
-      "sheet_odds": "-108",
-      "units": 1.5,
-      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026906D0F48872-CBC216B2DBD",
-      "kalshi_side": "yes",
-      "price_cents": 0,
-      "count_fp": "1.44",
-      "actual_risk_dollars": 0.7488,
-      "order_id": "rfq_eaf6fb1d-8f2c-4a50-92bd-73b5b6ea28e4_0b305d30-f416-4a67-af34-6078717450ea",
-      "is_parlay": true,
-      "legs": [
-        {
-          "leg_description": "MIL/CHC F5 U5.5",
-          "market_ticker": "KXMLBF5TOTAL-26SEP021940MILCHC-5",
-          "event_ticker": "KXMLBF5TOTAL-26SEP021940MILCHC",
-          "side": "no",
-          "market_title": "First 5 innings: Over 4.5 runs"
-        },
-        {
-          "leg_description": "DET F5 +0.5",
-          "market_ticker": "KXMLBF5SPREAD-26SEP021940DETMIN-MIN3",
-          "event_ticker": "KXMLBF5SPREAD-26SEP021940DETMIN",
-          "side": "no",
-          "market_title": "Minnesota wins first 5 innings by over 2.5 runs?"
-        }
-      ],
-      "simulated": false
-    },
     "0e4aec7b1e7321f0": {
       "trade_id": "0e4aec7b1e7321f0",
       "date_placed": "2026-09-02T21:32:35.876259+00:00",
