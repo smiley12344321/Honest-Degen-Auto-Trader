@@ -245,11 +245,15 @@ class KalshiClient:
             if side.lower() in ("yes", "bid"):
                 ask = mkt.get("yes_ask") or mkt.get("yes_ask_dollars")
                 if ask is not None:
-                    return int(float(ask) * 100) if float(ask) <= 1.0 else int(ask)
+                    c = int(round(float(ask) * 100)) if float(ask) <= 1.0 else int(ask)
+                    if 1 <= c <= 99:
+                        return c
             else:
                 ask = mkt.get("no_ask") or mkt.get("no_ask_dollars")
                 if ask is not None:
-                    return int(float(ask) * 100) if float(ask) <= 1.0 else int(ask)
+                    c = int(round(float(ask) * 100)) if float(ask) <= 1.0 else int(ask)
+                    if 1 <= c <= 99:
+                        return c
             return None
         except Exception as e:
             print(f"[KalshiClient] Could not fetch live ask for {ticker}: {e}")

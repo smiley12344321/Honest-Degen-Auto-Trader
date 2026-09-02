@@ -163,7 +163,7 @@ class Trader:
 
                     # 3d. Check if the combo market already has live ask orderbook liquidity
                     combo_ask = self.client.get_best_ask_cents(combo_ticker, side="yes")
-                    if combo_ask is not None:
+                    if combo_ask is not None and 1 <= combo_ask <= 99:
                         print(f"[Trader] Combo market has live orderbook liquidity @ {combo_ask}c. Executing direct taker order.")
                         req_cents = int(round(sizing["actual_risk_dollars"] * 100))
                         self.client.ensure_shard_balance(destination_shard=combo_shard, required_cents=req_cents)
