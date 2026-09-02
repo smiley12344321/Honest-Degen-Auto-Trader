@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-02T21:32:36.183511+00:00",
+  "last_updated": "2026-09-02T21:41:06.923201+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -162,6 +162,79 @@
       "count_fp": "1.85",
       "actual_risk_dollars": 0.999,
       "order_id": "01a06409-bd38-707f-baee-90c9f4efce4b",
+      "simulated": false
+    },
+    "676c431068fd6567": {
+      "trade_id": "676c431068fd6567",
+      "date_placed": "2026-09-02T21:41:03.651644+00:00",
+      "play": "Rays F5 ML + NYY NRFI + OAK ML",
+      "sport": "MLB",
+      "market": "3-Leg Parlay",
+      "sheet_odds": "589",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026F54262D44AB-85B86D29F59",
+      "kalshi_side": "yes",
+      "price_cents": 4,
+      "count_fp": "3.33",
+      "actual_risk_dollars": 0.4995,
+      "order_id": "rfq_ef87bd52-d039-46ea-a61b-b8ebf7b463d3_8aaef24e-4ffd-4908-aa95-638d1410f88a",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Rays F5 ML",
+          "market_ticker": "KXMLBF5-26SEP021840NYMTB-TB",
+          "event_ticker": "KXMLBF5-26SEP021840NYMTB",
+          "side": "yes",
+          "market_title": "Tampa Bay first 5 innings winner"
+        },
+        {
+          "leg_description": "NYY NRFI",
+          "market_ticker": "KXMLBRFI-26SEP022138NYYLAA",
+          "event_ticker": "KXMLBRFI-26SEP022138NYYLAA",
+          "side": "no",
+          "market_title": "1st inning: Over 0.5 runs"
+        },
+        {
+          "leg_description": "OAK ML",
+          "market_ticker": "KXMLBGAME-26SEP032140ATHSEA-ATH",
+          "event_ticker": "KXMLBGAME-26SEP032140ATHSEA",
+          "side": "yes",
+          "market_title": "A's wins"
+        }
+      ],
+      "simulated": false
+    },
+    "0bcb98eee40e7f7b": {
+      "trade_id": "0bcb98eee40e7f7b",
+      "date_placed": "2026-09-02T21:41:06.667246+00:00",
+      "play": "TOR/CLE F5 U5.5 + SEA F5 +1.5",
+      "sport": "MLB",
+      "market": "2-Market Combo",
+      "sheet_odds": "-116",
+      "units": 1.5,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026DA9B8A529D3-E70DF5188EF",
+      "kalshi_side": "yes",
+      "price_cents": 19,
+      "count_fp": "1.39",
+      "actual_risk_dollars": 0.7506,
+      "order_id": "rfq_3be92595-e30b-4a22-ae7d-389d361f6096_0db0f668-a7fc-4660-9bec-ae3102639bd1",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "TOR/CLE F5 U5.5",
+          "market_ticker": "KXMLBF5TOTAL-26SEP021840TORCLE-5",
+          "event_ticker": "KXMLBF5TOTAL-26SEP021840TORCLE",
+          "side": "no",
+          "market_title": "First 5 innings: Over 4.5 runs"
+        },
+        {
+          "leg_description": "SEA F5 +1.5",
+          "market_ticker": "KXMLBF5SPREAD-26SEP021610SEABOS-BOS3",
+          "event_ticker": "KXMLBF5SPREAD-26SEP021610SEABOS",
+          "side": "no",
+          "market_title": "Boston wins first 5 innings by over 2.5 runs?"
+        }
+      ],
       "simulated": false
     }
   }
