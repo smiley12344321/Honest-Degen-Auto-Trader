@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-03T00:42:16.631557+00:00",
+  "last_updated": "2026-09-03T05:09:16.699898+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -251,6 +251,39 @@
       "count_fp": "1.47",
       "actual_risk_dollars": 0.7497,
       "order_id": "01a06440-4a10-7877-b92d-c01ca2d301ee",
+      "simulated": false
+    },
+    "f8bc9298f5b779e3": {
+      "trade_id": "f8bc9298f5b779e3",
+      "date_placed": "2026-09-03T05:09:15.269732+00:00",
+      "play": "NYY ML + LAD ML",
+      "sport": "MLB",
+      "market": "2-Team Parlay",
+      "sheet_odds": "117",
+      "units": 2.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026D6E977E540A-0F12F159E25",
+      "kalshi_side": "yes",
+      "price_cents": 3,
+      "count_fp": "2.17",
+      "actual_risk_dollars": 0.9982,
+      "order_id": "rfq_0dd5a929-2443-4cd6-9fa7-e703dfc9f177_ba2689db-a190-4d0a-9321-64cfdbeca4b9",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "NYY ML",
+          "market_ticker": "KXMLBGAME-26SEP042140NYYSD-NYY",
+          "event_ticker": "KXMLBGAME-26SEP042140NYYSD",
+          "side": "yes",
+          "market_title": "New York Y wins"
+        },
+        {
+          "leg_description": "LAD ML",
+          "market_ticker": "KXMLBGAME-26SEP022210STLLAD-LAD",
+          "event_ticker": "KXMLBGAME-26SEP022210STLLAD",
+          "side": "yes",
+          "market_title": "Los Angeles D wins"
+        }
+      ],
       "simulated": false
     }
   }
