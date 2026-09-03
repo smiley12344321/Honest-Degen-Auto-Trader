@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-03T05:09:16.699898+00:00",
+  "last_updated": "2026-09-03T09:51:08.169247+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -282,6 +282,87 @@
           "event_ticker": "KXMLBGAME-26SEP022210STLLAD",
           "side": "yes",
           "market_title": "Los Angeles D wins"
+        }
+      ],
+      "simulated": false
+    },
+    "47551ce4d2d25696": {
+      "trade_id": "47551ce4d2d25696",
+      "date_placed": "2026-09-03T09:51:03.181486+00:00",
+      "play": "Dodgers -1.5",
+      "sport": "MLB",
+      "market": "Run Line",
+      "sheet_odds": "-125",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26SEP032210STLLAD-LAD2",
+      "kalshi_side": "yes",
+      "price_cents": 54,
+      "count_fp": "1.39",
+      "actual_risk_dollars": 0.7506,
+      "order_id": "01a066ad-d358-7f08-9e5f-46047af254d3",
+      "simulated": false
+    },
+    "dd3e00f3eb2cff1d": {
+      "trade_id": "dd3e00f3eb2cff1d",
+      "date_placed": "2026-09-03T09:51:04.230936+00:00",
+      "play": "Marlins/Royals Under 9",
+      "sport": "MLB",
+      "market": "Total",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBTOTAL-26SEP031940MIAKC-9",
+      "kalshi_side": "no",
+      "price_cents": 45,
+      "count_fp": "1.67",
+      "actual_risk_dollars": 0.7515,
+      "order_id": "01a066ad-d740-751f-939f-66fffb03daf6",
+      "simulated": false
+    },
+    "2c723534bd9acdb3": {
+      "trade_id": "2c723534bd9acdb3",
+      "date_placed": "2026-09-03T09:51:04.962895+00:00",
+      "play": "Brewers ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-112",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP031915MILCHC-MIL",
+      "kalshi_side": "yes",
+      "price_cents": 53,
+      "count_fp": "1.42",
+      "actual_risk_dollars": 0.7526,
+      "order_id": "01a066ad-d740-7164-be2f-6122b67130bc",
+      "simulated": false
+    },
+    "138ece1d2eb85d2e": {
+      "trade_id": "138ece1d2eb85d2e",
+      "date_placed": "2026-09-03T09:51:07.867957+00:00",
+      "play": "PIT ML + TOR/CLE F5 Under",
+      "sport": "MLB",
+      "market": "2-Market Combo",
+      "sheet_odds": "-115",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S20266357F4DD75E-9C772E1C499",
+      "kalshi_side": "yes",
+      "price_cents": 10,
+      "count_fp": "0.94",
+      "actual_risk_dollars": 0.4982,
+      "order_id": "rfq_85c020be-2924-45ce-912c-82abce0515af_febfa68d-e7f5-4d95-92f2-3608d4c30ee1",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "PIT ML",
+          "market_ticker": "KXMLBGAME-26SEP031235SFPIT-PIT",
+          "event_ticker": "KXMLBGAME-26SEP031235SFPIT",
+          "side": "yes",
+          "market_title": "Pittsburgh wins"
+        },
+        {
+          "leg_description": "TOR/CLE F5 Under",
+          "market_ticker": "KXMLBF5TOTAL-26SEP031310TORCLE-5",
+          "event_ticker": "KXMLBF5TOTAL-26SEP031310TORCLE",
+          "side": "no",
+          "market_title": "First 5 innings: Over 4.5 runs"
         }
       ],
       "simulated": false
