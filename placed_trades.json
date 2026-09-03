@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-03T20:34:14.036861+00:00",
+  "last_updated": "2026-09-03T22:45:44.810485+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -365,6 +365,22 @@
           "market_title": "First 5 innings: Over 4.5 runs"
         }
       ],
+      "simulated": false
+    },
+    "6469f0af95824ed3": {
+      "trade_id": "6469f0af95824ed3",
+      "date_placed": "2026-09-03T22:45:44.293720+00:00",
+      "play": "Georgia Tech -6.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-111",
+      "units": 2.0,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP03COLOGT-GT7",
+      "kalshi_side": "yes",
+      "price_cents": 50,
+      "count_fp": "2.00",
+      "actual_risk_dollars": 1.0,
+      "order_id": "01a06973-11c0-7ac5-9307-dbd9cfa44081",
       "simulated": false
     }
   }
