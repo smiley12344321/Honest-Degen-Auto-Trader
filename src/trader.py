@@ -260,10 +260,10 @@ class Trader:
                             skipped_count += 1
                             continue
 
-                        # 3h. Accept Quote
+                        # 3h. Accept Quote: Accepting maker's 'no' bid fills requester with YES contracts
                         req_cents = int(round(sizing["actual_risk_dollars"] * 100))
                         self.client.ensure_shard_balance(destination_shard=combo_shard, required_cents=req_cents)
-                        self.client.accept_quote(rfq_id=rfq_id, quote_id=quote_id, side="yes", dry_run=dry_run)
+                        self.client.accept_quote(rfq_id=rfq_id, quote_id=quote_id, side="no", dry_run=dry_run)
                         order_id = f"rfq_{rfq_id}_{quote_id}"
 
                     # 3i. Record parlay to state ledger

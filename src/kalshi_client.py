@@ -660,8 +660,11 @@ class KalshiClient:
             for q in raw_quotes:
                 yes_bid_d = q.get("yes_bid_dollars")
                 no_bid_d = q.get("no_bid_dollars")
-                yes_price_c = int(round(float(yes_bid_d) * 100)) if yes_bid_d and float(yes_bid_d) > 0 else 0
-                no_price_c = int(round(float(no_bid_d) * 100)) if no_bid_d and float(no_bid_d) > 0 else 0
+                # In binary prediction RFQ mechanics:
+                # - Maker's no_bid is an offer to buy NO. Requester taking this (accepted_side='no') BUYS YES at (1.00 - no_bid).
+                # - Maker's yes_bid is an offer to buy YES. Requester taking this (accepted_side='yes') BUYS NO at (1.00 - yes_bid).
+                yes_price_c = int(round((1.0 - float(no_bid_d)) * 100)) if no_bid_d and float(no_bid_d) > 0 else 0
+                no_price_c = int(round((1.0 - float(yes_bid_d)) * 100)) if yes_bid_d and float(yes_bid_d) > 0 else 0
 
                 q_copy = dict(q)
                 q_copy["yes_price_cents"] = yes_price_c
