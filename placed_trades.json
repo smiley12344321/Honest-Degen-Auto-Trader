@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-04T05:33:54.832966+00:00",
+  "last_updated": "2026-09-04T09:57:06.583652+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -397,6 +397,104 @@
       "count_fp": "0.96",
       "actual_risk_dollars": 0.4992,
       "order_id": "01a069e4-1b40-7575-83b4-488f7a69f79a",
+      "simulated": false
+    },
+    "c7c379cd8130a740": {
+      "trade_id": "c7c379cd8130a740",
+      "date_placed": "2026-09-04T09:57:01.941199+00:00",
+      "play": "Shelton ML + Tiafoe ML",
+      "sport": "Tennis (ATP)",
+      "market": "2-Team Parlay",
+      "sheet_odds": "-113",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026F6A1E6F919A-CE8E28BCC3F",
+      "kalshi_side": "yes",
+      "price_cents": 53,
+      "count_fp": "0.94",
+      "actual_risk_dollars": 0.4982,
+      "order_id": "01a06bd9-a5c8-7540-9353-dd5d87a96430",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Shelton ML",
+          "market_ticker": "KXATPMATCH-26SEP04SHESHA-SHE",
+          "event_ticker": "KXATPMATCH-26SEP04SHESHA",
+          "side": "yes",
+          "market_title": "Ben Shelton wins"
+        },
+        {
+          "leg_description": "Tiafoe ML",
+          "market_ticker": "KXATPMATCH-26SEP04VACTIA-TIA",
+          "event_ticker": "KXATPMATCH-26SEP04VACTIA",
+          "side": "yes",
+          "market_title": "Frances Tiafoe wins"
+        }
+      ],
+      "simulated": false
+    },
+    "6496ef0785394ad9": {
+      "trade_id": "6496ef0785394ad9",
+      "date_placed": "2026-09-04T09:57:04.032691+00:00",
+      "play": "Pegula ML + Lehecka ML",
+      "sport": "Tennis (ATP/WTA)",
+      "market": "2-Team Parlay",
+      "sheet_odds": "-129",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026322A6F77DD0-FEFF1798312",
+      "kalshi_side": "yes",
+      "price_cents": 52,
+      "count_fp": "0.89",
+      "actual_risk_dollars": 0.4984,
+      "order_id": "rfq_4849095d-5237-44c2-93e2-bcbbfc6a669b_e560c8dd-ff45-4535-9079-4a09d6bed821",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Pegula ML",
+          "market_ticker": "KXWTAMATCH-26SEP04PEGFER-PEG",
+          "event_ticker": "KXWTAMATCH-26SEP04PEGFER",
+          "side": "yes",
+          "market_title": "Jessica Pegula wins"
+        },
+        {
+          "leg_description": "Lehecka ML",
+          "market_ticker": "KXATPMATCH-26SEP04LEHTSI-LEH",
+          "event_ticker": "KXATPMATCH-26SEP04LEHTSI",
+          "side": "yes",
+          "market_title": "Jiri Lehecka wins"
+        }
+      ],
+      "simulated": false
+    },
+    "7c4435fe15f58aa0": {
+      "trade_id": "7c4435fe15f58aa0",
+      "date_placed": "2026-09-04T09:57:04.537095+00:00",
+      "play": "Cleveland Guardians ML (Game 2)",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-130",
+      "units": 2.0,
+      "kalshi_ticker": "KXMLBGAME-26SEP041410DETCLEG1-CLE",
+      "kalshi_side": "yes",
+      "price_cents": 56,
+      "count_fp": "1.79",
+      "actual_risk_dollars": 1.0024,
+      "order_id": "01a06bd9-b180-77b5-8bc0-67710834ad6b",
+      "simulated": false
+    },
+    "00bdb0d5ddd6ca13": {
+      "trade_id": "00bdb0d5ddd6ca13",
+      "date_placed": "2026-09-04T09:57:06.041460+00:00",
+      "play": "Tampa Bay Rays ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-115",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP042005TBTEX-TB",
+      "kalshi_side": "yes",
+      "price_cents": 52,
+      "count_fp": "1.44",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "01a06bd9-b950-7e34-9ced-cdf9eeebc3a4",
       "simulated": false
     }
   }
