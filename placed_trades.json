@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-03T22:49:44.333327+00:00",
+  "last_updated": "2026-09-04T00:49:15.747868+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -381,6 +381,22 @@
       "count_fp": "2.00",
       "actual_risk_dollars": 1.0,
       "order_id": "01a06973-11c0-7ac5-9307-dbd9cfa44081",
+      "simulated": false
+    },
+    "7c74840ca7896721": {
+      "trade_id": "7c74840ca7896721",
+      "date_placed": "2026-09-04T00:49:12.797488+00:00",
+      "play": "Seibu Lions/SoftBank Hawks Under 8",
+      "sport": "NPB",
+      "market": "Total",
+      "sheet_odds": "-141",
+      "units": 1.0,
+      "kalshi_ticker": "KXNPBTOTAL-26SEP040500SAIFUK-8",
+      "kalshi_side": "no",
+      "price_cents": 52,
+      "count_fp": "0.96",
+      "actual_risk_dollars": 0.4992,
+      "order_id": "01a069e4-1b40-7575-83b4-488f7a69f79a",
       "simulated": false
     }
   }
