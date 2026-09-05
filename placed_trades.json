@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-05T19:16:42.685160+00:00",
+  "last_updated": "2026-09-05T21:31:18.268208+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -559,6 +559,22 @@
       "count_fp": "1.97",
       "actual_risk_dollars": 0.7486,
       "order_id": "01a07222-7158-76dd-affa-3ed3aad26047",
+      "simulated": false
+    },
+    "24e306243e77655d": {
+      "trade_id": "24e306243e77655d",
+      "date_placed": "2026-09-05T21:31:17.278113+00:00",
+      "play": "Guardians F5 -0.5",
+      "sport": "MLB",
+      "market": "First 5 Run Line",
+      "sheet_odds": "-105",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBF5SPREAD-26SEP051810DETCLE-CLE3",
+      "kalshi_side": "yes",
+      "price_cents": 22,
+      "count_fp": "3.41",
+      "actual_risk_dollars": 0.7502,
+      "order_id": "01a0737b-a088-722b-a0f6-34dae5e2d15b",
       "simulated": false
     }
   }
