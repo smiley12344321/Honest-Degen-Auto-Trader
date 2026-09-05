@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-05T12:06:21.654746+00:00",
+  "last_updated": "2026-09-05T15:14:15.702978+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -543,6 +543,22 @@
       "count_fp": "3.12",
       "actual_risk_dollars": 0.7488,
       "order_id": "01a07176-6660-708e-926e-a809ab4dbd7a",
+      "simulated": false
+    },
+    "9b07e43b5bab9f81": {
+      "trade_id": "9b07e43b5bab9f81",
+      "date_placed": "2026-09-05T15:14:15.071239+00:00",
+      "play": "Arkansas State +11.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP05SDAKUNCO-SDAK14",
+      "kalshi_side": "no",
+      "price_cents": 38,
+      "count_fp": "1.97",
+      "actual_risk_dollars": 0.7486,
+      "order_id": "01a07222-7158-76dd-affa-3ed3aad26047",
       "simulated": false
     }
   }
