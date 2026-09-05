@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-05T08:32:52.707638+00:00",
+  "last_updated": "2026-09-05T12:06:21.654746+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -495,6 +495,54 @@
       "count_fp": "1.44",
       "actual_risk_dollars": 0.7488,
       "order_id": "01a06bd9-b950-7e34-9ced-cdf9eeebc3a4",
+      "simulated": false
+    },
+    "1dfb9fda2b2d8fc4": {
+      "trade_id": "1dfb9fda2b2d8fc4",
+      "date_placed": "2026-09-05T12:06:18.795991+00:00",
+      "play": "Clemson +10",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-110",
+      "units": 2.5,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP05CLEMLSU-LSU10",
+      "kalshi_side": "no",
+      "price_cents": 47,
+      "count_fp": "2.66",
+      "actual_risk_dollars": 1.2502,
+      "order_id": "01a07176-5e90-7579-a2f3-61246bfa106e",
+      "simulated": false
+    },
+    "d20d6ed41569e01f": {
+      "trade_id": "d20d6ed41569e01f",
+      "date_placed": "2026-09-05T12:06:19.268813+00:00",
+      "play": "Tarleton State +2",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP05TARLBGSU-BGSU2",
+      "kalshi_side": "no",
+      "price_cents": 50,
+      "count_fp": "1.50",
+      "actual_risk_dollars": 0.75,
+      "order_id": "01a07176-6278-7000-954b-83b88d2e9aa2",
+      "simulated": false
+    },
+    "9995894fe3c946a7": {
+      "trade_id": "9995894fe3c946a7",
+      "date_placed": "2026-09-05T12:06:20.841174+00:00",
+      "play": "Pittsburgh -16.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26SEP051840LAAPIT-PIT4",
+      "kalshi_side": "yes",
+      "price_cents": 24,
+      "count_fp": "3.12",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "01a07176-6660-708e-926e-a809ab4dbd7a",
       "simulated": false
     }
   }
