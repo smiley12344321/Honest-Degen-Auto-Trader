@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-05T21:31:18.268208+00:00",
+  "last_updated": "2026-09-05T23:20:36.241575+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -575,6 +575,22 @@
       "count_fp": "3.41",
       "actual_risk_dollars": 0.7502,
       "order_id": "01a0737b-a088-722b-a0f6-34dae5e2d15b",
+      "simulated": false
+    },
+    "69beaab13eac1c5d": {
+      "trade_id": "69beaab13eac1c5d",
+      "date_placed": "2026-09-05T23:20:35.926164+00:00",
+      "play": "Arsenal ML (vs. Chelsea)",
+      "sport": "Soccer (EPL)",
+      "market": "Moneyline",
+      "sheet_odds": "-140",
+      "units": 1.5,
+      "kalshi_ticker": "KXEPLGAME-26SEP06ARSCFC-ARS",
+      "kalshi_side": "yes",
+      "price_cents": 58,
+      "count_fp": "1.29",
+      "actual_risk_dollars": 0.7482,
+      "order_id": "01a073df-b1b8-742f-bbfd-fec331f5e313",
       "simulated": false
     }
   }
