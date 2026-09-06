@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-06T13:57:20.440944+00:00",
+  "last_updated": "2026-09-06T16:47:58.294811+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -672,6 +672,70 @@
           "market_title": "Aryna Sabalenka wins"
         }
       ],
+      "simulated": false
+    },
+    "3f826efc72860333": {
+      "trade_id": "3f826efc72860333",
+      "date_placed": "2026-09-06T16:47:54.439681+00:00",
+      "play": "Chicago Cubs ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-150",
+      "units": 2.0,
+      "kalshi_ticker": "KXMLBGAME-26SEP061340CHCMIA-CHC",
+      "kalshi_side": "yes",
+      "price_cents": 57,
+      "count_fp": "1.75",
+      "actual_risk_dollars": 0.9975,
+      "order_id": "01a0779e-8a90-7272-ba3f-ebf0807c709e",
+      "simulated": false
+    },
+    "c3ff14ca2d3aa439": {
+      "trade_id": "c3ff14ca2d3aa439",
+      "date_placed": "2026-09-06T16:47:56.762842+00:00",
+      "play": "Boston Red Sox ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-135",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP061335BOSBAL-BOS",
+      "kalshi_side": "yes",
+      "price_cents": 55,
+      "count_fp": "1.36",
+      "actual_risk_dollars": 0.748,
+      "order_id": "01a0779e-9260-700d-a8e4-b5f202f1e994",
+      "simulated": false
+    },
+    "21e9bde1641cbefb": {
+      "trade_id": "21e9bde1641cbefb",
+      "date_placed": "2026-09-06T16:47:57.313370+00:00",
+      "play": "Milwaukee Brewers ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-143",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP061210MILCIN-MIL",
+      "kalshi_side": "yes",
+      "price_cents": 25,
+      "count_fp": "3.00",
+      "actual_risk_dollars": 0.75,
+      "order_id": "01a0779e-9648-793a-9e98-06d9bde3ea27",
+      "simulated": false
+    },
+    "4a2d8a942601abca": {
+      "trade_id": "4a2d8a942601abca",
+      "date_placed": "2026-09-06T16:47:57.890092+00:00",
+      "play": "Angels/Pirates NRFI",
+      "sport": "MLB",
+      "market": "1st Inning",
+      "sheet_odds": "-125",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26SEP061335LAAPIT",
+      "kalshi_side": "no",
+      "price_cents": 59,
+      "count_fp": "1.27",
+      "actual_risk_dollars": 0.7493,
+      "order_id": "01a0779e-9648-794b-9fee-1eb8f7297561",
       "simulated": false
     }
   }
