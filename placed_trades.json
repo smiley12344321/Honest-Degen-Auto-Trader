@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-06T01:13:39.027589+00:00",
+  "last_updated": "2026-09-06T06:00:12.181781+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -591,6 +591,87 @@
       "count_fp": "1.29",
       "actual_risk_dollars": 0.7482,
       "order_id": "01a073df-b1b8-742f-bbfd-fec331f5e313",
+      "simulated": false
+    },
+    "d1abfff409f307db": {
+      "trade_id": "d1abfff409f307db",
+      "date_placed": "2026-09-06T06:00:07.070097+00:00",
+      "play": "Louisville +6.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-105",
+      "units": 1.5,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP06LOUMISS-MISS7",
+      "kalshi_side": "no",
+      "price_cents": 49,
+      "count_fp": "1.53",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a0754d-7a58-7818-8645-35d817a14626",
+      "simulated": false
+    },
+    "3e71fe4bdb989ba3": {
+      "trade_id": "3e71fe4bdb989ba3",
+      "date_placed": "2026-09-06T06:00:07.734450+00:00",
+      "play": "Wisconsin +20.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP06WISND-ND21",
+      "kalshi_side": "no",
+      "price_cents": 49,
+      "count_fp": "1.53",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a0754d-7a58-75d6-a487-6391e7e93955",
+      "simulated": false
+    },
+    "e1e121772066ade6": {
+      "trade_id": "e1e121772066ade6",
+      "date_placed": "2026-09-06T06:00:10.342140+00:00",
+      "play": "Washington St +23.5",
+      "sport": "NCAAF",
+      "market": "Spread",
+      "sheet_odds": "-112",
+      "units": 1.0,
+      "kalshi_ticker": "KXNCAAFSPREAD-26SEP06WSUWASH-WASH24",
+      "kalshi_side": "no",
+      "price_cents": 50,
+      "count_fp": "1.00",
+      "actual_risk_dollars": 0.5,
+      "order_id": "01a0754d-8610-7d6c-940e-708100b4295d",
+      "simulated": false
+    },
+    "3d9c319f5d6c325f": {
+      "trade_id": "3d9c319f5d6c325f",
+      "date_placed": "2026-09-06T06:00:11.702302+00:00",
+      "play": "Shelton ML + Sabalenka ML",
+      "sport": "Tennis (ATP/WTA)",
+      "market": "Moneyline Parlay",
+      "sheet_odds": "-125",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026A430904DBC5-44D023BE30C",
+      "kalshi_side": "yes",
+      "price_cents": 61,
+      "count_fp": "0.89",
+      "actual_risk_dollars": 0.4984,
+      "order_id": "01a0754d-89f8-75d0-89c0-a773097e6fc3",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Shelton ML",
+          "market_ticker": "KXATPMATCH-26SEP06SHETSI-SHE",
+          "event_ticker": "KXATPMATCH-26SEP06SHETSI",
+          "side": "yes",
+          "market_title": "Ben Shelton wins"
+        },
+        {
+          "leg_description": "Sabalenka ML",
+          "market_ticker": "KXWTAMATCH-26SEP06SABTOW-SAB",
+          "event_ticker": "KXWTAMATCH-26SEP06SABTOW",
+          "side": "yes",
+          "market_title": "Aryna Sabalenka wins"
+        }
+      ],
       "simulated": false
     }
   }
