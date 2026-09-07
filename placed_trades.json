@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-07T16:05:00.991035+00:00",
+  "last_updated": "2026-09-07T18:28:24.345204+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -768,6 +768,22 @@
       "count_fp": "5.56",
       "actual_risk_dollars": 0.5004,
       "order_id": "01a07b71-9360-7f1f-891d-343ff5923dc4",
+      "simulated": false
+    },
+    "b55331f21f1171cf": {
+      "trade_id": "b55331f21f1171cf",
+      "date_placed": "2026-09-07T18:28:24.033932+00:00",
+      "play": "St. Louis Cardinals ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "115",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBGAME-26SEP072010STLSF-STL",
+      "kalshi_side": "yes",
+      "price_cents": 45,
+      "count_fp": "1.11",
+      "actual_risk_dollars": 0.4995,
+      "order_id": "01a07d20-e940-7f8e-a40c-28532dd7e2f6",
       "simulated": false
     }
   }
