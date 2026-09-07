@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-07T05:15:47.139775+00:00",
+  "last_updated": "2026-09-07T10:37:16.774800+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -752,6 +752,22 @@
       "count_fp": "1.27",
       "actual_risk_dollars": 0.7493,
       "order_id": "01a07951-7668-7d92-bfd0-374fad51629b",
+      "simulated": false
+    },
+    "e78da588e3c0835b": {
+      "trade_id": "e78da588e3c0835b",
+      "date_placed": "2026-09-07T10:37:16.372281+00:00",
+      "play": "FSU Under 27.5",
+      "sport": "NCAAF",
+      "market": "Team Total",
+      "sheet_odds": "-135",
+      "units": 1.0,
+      "kalshi_ticker": "KXNCAAFTOTAL-26SEP07SMUFSU-33",
+      "kalshi_side": "no",
+      "price_cents": 9,
+      "count_fp": "5.56",
+      "actual_risk_dollars": 0.5004,
+      "order_id": "01a07b71-9360-7f1f-891d-343ff5923dc4",
       "simulated": false
     }
   }
