@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-07T19:59:15.296390+00:00",
+  "last_updated": "2026-09-07T21:24:10.898633+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -784,6 +784,38 @@
       "count_fp": "1.11",
       "actual_risk_dollars": 0.4995,
       "order_id": "01a07d20-e940-7f8e-a40c-28532dd7e2f6",
+      "simulated": false
+    },
+    "f55840cf8e1f8e96": {
+      "trade_id": "f55840cf8e1f8e96",
+      "date_placed": "2026-09-07T21:24:09.881333+00:00",
+      "play": "Toronto Over 4.5",
+      "sport": "MLB",
+      "market": "Team Total",
+      "sheet_odds": "-125",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBSPREAD-26SEP072205TORATH-TOR4",
+      "kalshi_side": "yes",
+      "price_cents": 33,
+      "count_fp": "1.52",
+      "actual_risk_dollars": 0.5016,
+      "order_id": "01a07dc1-d0a8-739d-b4d9-5a1b53eaf89f",
+      "simulated": false
+    },
+    "e692535d6502ddcf": {
+      "trade_id": "e692535d6502ddcf",
+      "date_placed": "2026-09-07T21:24:10.434624+00:00",
+      "play": "Reds/Dodgers F5 Under 4.5",
+      "sport": "MLB",
+      "market": "F5 Total",
+      "sheet_odds": "-120",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBF5TOTAL-26SEP072110CINLAD-5",
+      "kalshi_side": "no",
+      "price_cents": 54,
+      "count_fp": "0.93",
+      "actual_risk_dollars": 0.5022,
+      "order_id": "01a07dc1-d490-7aec-8242-f06f4751c801",
       "simulated": false
     }
   }
