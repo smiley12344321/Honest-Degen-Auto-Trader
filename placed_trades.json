@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-06T22:53:48.407136+00:00",
+  "last_updated": "2026-09-07T00:42:58.191836+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -736,6 +736,22 @@
       "count_fp": "1.27",
       "actual_risk_dollars": 0.7493,
       "order_id": "01a0779e-9648-794b-9fee-1eb8f7297561",
+      "simulated": false
+    },
+    "9e673003d9d23411": {
+      "trade_id": "9e673003d9d23411",
+      "date_placed": "2026-09-07T00:42:57.801206+00:00",
+      "play": "Wisconsin/Notre Dame Under 47.5",
+      "sport": "NCAAF",
+      "market": "Total",
+      "sheet_odds": "-116",
+      "units": 1.5,
+      "kalshi_ticker": "KXNCAAFTOTAL-26SEP06WISND-48",
+      "kalshi_side": "no",
+      "price_cents": 59,
+      "count_fp": "1.27",
+      "actual_risk_dollars": 0.7493,
+      "order_id": "01a07951-7668-7d92-bfd0-374fad51629b",
       "simulated": false
     }
   }
