@@ -163,3 +163,38 @@ class TestMarketMatcher:
         assert res_under.matched is True
         assert res_under.ticker == "KXWNBATOTAL-26AUG28TORLV-178"
         assert res_under.side == "no"
+
+    def test_match_cfb_team_total(self, matcher):
+        mock_cfb_events = [
+            {
+                "event_ticker": "KXNCAAFTOTAL-26SEP07SMUFSU",
+                "title": "SMU vs Florida St.: Total Points",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNCAAFTOTAL-26SEP07SMUFSU-33", "title": "Over 32.5 points scored", "yes_ask": 50},
+                    {"ticker": "KXNCAAFTOTAL-26SEP07SMUFSU-55", "title": "Over 54.5 points scored", "yes_ask": 50},
+                ]
+            },
+            {
+                "event_ticker": "KXNCAAFTEAMTOTAL-26SEP07SMUFSU",
+                "title": "SMU vs Florida St.: Team Total",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNCAAFTEAMTOTAL-26SEP07SMUFSU-FSU24", "title": "Florida St. scores over 23.5 points", "yes_ask": 70},
+                    {"ticker": "KXNCAAFTEAMTOTAL-26SEP07SMUFSU-FSU28", "title": "Florida St. scores over 27.5 points", "yes_ask": 45},
+                    {"ticker": "KXNCAAFTEAMTOTAL-26SEP07SMUFSU-SMU28", "title": "SMU scores over 27.5 points", "yes_ask": 50},
+                ]
+            }
+        ]
+
+        pick_tt = PickRecord(
+            day="120", date="9/7/2026", sport="NCAAF", play="FSU Under 27.5",
+            market="Team Total", odds_raw="-135", odds_numeric=-135.0,
+            implied_cents=57, grade="A", units=2.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="test_tt"
+        )
+        res_tt = matcher.match_pick(pick_tt, live_events=mock_cfb_events)
+        assert res_tt.matched is True
+        assert res_tt.ticker == "KXNCAAFTEAMTOTAL-26SEP07SMUFSU-FSU28"
+        assert res_tt.event_ticker == "KXNCAAFTEAMTOTAL-26SEP07SMUFSU"
+        assert res_tt.side == "no"
