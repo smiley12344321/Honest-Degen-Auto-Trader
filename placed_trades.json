@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-08T05:19:47.677609+00:00",
+  "last_updated": "2026-09-08T09:57:36.393578+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -816,6 +816,119 @@
       "count_fp": "0.93",
       "actual_risk_dollars": 0.5022,
       "order_id": "01a07dc1-d490-7aec-8242-f06f4751c801",
+      "simulated": false
+    },
+    "7bffefabb484e8cd": {
+      "trade_id": "7bffefabb484e8cd",
+      "date_placed": "2026-09-08T09:57:32.659125+00:00",
+      "play": "Alcaraz ML + Sabalenka ML",
+      "sport": "Tennis (ATP/WTA)",
+      "market": "Moneyline Parlay",
+      "sheet_odds": "-135",
+      "units": 1.5,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026B15D40A6E2C-4D0F4879572",
+      "kalshi_side": "yes",
+      "price_cents": 58,
+      "count_fp": "1.32",
+      "actual_risk_dollars": 0.7524,
+      "order_id": "01a08073-8ee0-7f83-bb2b-a01a6d50d6a9",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Alcaraz ML",
+          "market_ticker": "KXATPMATCH-26SEP08SHEALC-ALC",
+          "event_ticker": "KXATPMATCH-26SEP08SHEALC",
+          "side": "yes",
+          "market_title": "Carlos Alcaraz wins"
+        },
+        {
+          "leg_description": "Sabalenka ML",
+          "market_ticker": "KXWTAMATCH-26SEP08SABNOS-SAB",
+          "event_ticker": "KXWTAMATCH-26SEP08SABNOS",
+          "side": "yes",
+          "market_title": "Aryna Sabalenka wins"
+        }
+      ],
+      "simulated": false
+    },
+    "5e07865e5add0f92": {
+      "trade_id": "5e07865e5add0f92",
+      "date_placed": "2026-09-08T09:57:33.436686+00:00",
+      "play": "Yankees -1.5",
+      "sport": "MLB",
+      "market": "Run Line",
+      "sheet_odds": "-145",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26SEP081905COLNYY-NYY2",
+      "kalshi_side": "yes",
+      "price_cents": 58,
+      "count_fp": "1.29",
+      "actual_risk_dollars": 0.7482,
+      "order_id": "01a08073-92c8-796d-a612-de443b199a8e",
+      "simulated": false
+    },
+    "9812687ffdadfb66": {
+      "trade_id": "9812687ffdadfb66",
+      "date_placed": "2026-09-08T09:57:34.130925+00:00",
+      "play": "Dodgers -1.5",
+      "sport": "MLB",
+      "market": "Run Line",
+      "sheet_odds": "-145",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26SEP081840HOUPHI-PHI2",
+      "kalshi_side": "yes",
+      "price_cents": 40,
+      "count_fp": "1.88",
+      "actual_risk_dollars": 0.752,
+      "order_id": "01a08073-96b0-781a-8e02-db6866b40500",
+      "simulated": false
+    },
+    "e887205a1d3341d2": {
+      "trade_id": "e887205a1d3341d2",
+      "date_placed": "2026-09-08T09:57:34.799430+00:00",
+      "play": "Marlins F5 ML",
+      "sport": "MLB",
+      "market": "F5 ML",
+      "sheet_odds": "-135",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBF5-26SEP081840NYMMIA-MIA",
+      "kalshi_side": "yes",
+      "price_cents": 47,
+      "count_fp": "1.06",
+      "actual_risk_dollars": 0.4982,
+      "order_id": "01a08073-96b0-7ebb-b7e7-ccca9cac7697",
+      "simulated": false
+    },
+    "b8909a68a1803259": {
+      "trade_id": "b8909a68a1803259",
+      "date_placed": "2026-09-08T09:57:35.455334+00:00",
+      "play": "LAA @ BOS (NRFI)",
+      "sport": "MLB",
+      "market": "1st Inning",
+      "sheet_odds": "-130",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBRFI-26SEP081845LAABOS",
+      "kalshi_side": "no",
+      "price_cents": 55,
+      "count_fp": "0.91",
+      "actual_risk_dollars": 0.5005,
+      "order_id": "01a08073-9a98-7e4e-8a2c-48edf2c6a75a",
+      "simulated": false
+    },
+    "6aed91fe0c5a826c": {
+      "trade_id": "6aed91fe0c5a826c",
+      "date_placed": "2026-09-08T09:57:36.085342+00:00",
+      "play": "White Sox F5 ML",
+      "sport": "MLB",
+      "market": "F5 ML",
+      "sheet_odds": "-140",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBF5-26SEP081940PITCWS-CWS",
+      "kalshi_side": "yes",
+      "price_cents": 49,
+      "count_fp": "1.02",
+      "actual_risk_dollars": 0.4998,
+      "order_id": "01a08073-9e80-75ba-a29f-d71a06e871fb",
       "simulated": false
     }
   }
