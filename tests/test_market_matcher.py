@@ -198,3 +198,61 @@ class TestMarketMatcher:
         assert res_tt.ticker == "KXNCAAFTEAMTOTAL-26SEP07SMUFSU-FSU28"
         assert res_tt.event_ticker == "KXNCAAFTEAMTOTAL-26SEP07SMUFSU"
         assert res_tt.side == "no"
+
+    def test_strict_date_matching_rejects_mismatched_date(self):
+        matcher = MarketMatcher(kalshi_client=None)
+        mock_events = [
+            {
+                "event_ticker": "KXMLBGAME-26SEP101215TBATL",
+                "title": "Tampa Bay vs Atlanta",
+                "sub_title": "TB vs ATL (Sep 10)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXMLBGAME-26SEP101215TBATL-TB", "title": "Tampa Bay to win", "yes_ask": 55}
+                ]
+            }
+        ]
+        # Pick is for Sep 9, event is for Sep 10
+        pick = PickRecord(
+            day="120", date="9/9/2026", sport="MLB", play="Tampa Bay ML",
+            market="Moneyline", odds_raw="-120", odds_numeric=-120.0,
+            implied_cents=55, grade="A", units=1.5, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="tb_ml_test"
+        )
+        res = matcher.match_pick(pick, live_events=mock_events)
+        assert res.matched is False
+        assert "on 9/9/2026" in res.reason
+
+    def test_nfl_patriots_spread_matching(self, matcher):
+        mock_nfl_events = [
+            {
+                "event_ticker": "KXNFLSPREAD-26SEP09NESEA",
+                "title": "New England vs Seattle: Spread",
+                "sub_title": "NE vs SEA (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLSPREAD-26SEP09NESEA-SEA4", "title": "Seattle wins by over 3.5 points?", "yes_ask": 52},
+                    {"ticker": "KXNFLSPREAD-26SEP09NESEA-NE4", "title": "New England wins by over 3.5 points?", "yes_ask": 48}
+                ]
+            },
+            {
+                "event_ticker": "KXNFLGAME-26SEP20PITNE",
+                "title": "Pittsburgh vs New England",
+                "sub_title": "PIT vs NE (Sep 20)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLGAME-26SEP20PITNE-NE", "title": "New England to win", "yes_ask": 50}
+                ]
+            }
+        ]
+        pick = PickRecord(
+            day="120", date="9/9/2026", sport="NFL", play="Patriots +3.5",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=2.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="patriots_test"
+        )
+        res = matcher.match_pick(pick, live_events=mock_nfl_events)
+        assert res.matched is True
+        assert res.event_ticker == "KXNFLSPREAD-26SEP09NESEA"
+        assert res.ticker == "KXNFLSPREAD-26SEP09NESEA-SEA4"
+        assert res.side == "no"

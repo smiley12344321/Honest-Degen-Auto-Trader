@@ -25,14 +25,117 @@ class MatchResult:
     exchange_index: Optional[int] = None
 
 
+MONTHS_MAP = {
+    "JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
+    "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10, "NOV": 11, "DEC": 12
+}
+
+
 class MarketMatcher:
     """
     Matches sports picks from the Google Sheet to live Kalshi markets and contract tickers.
+    Supports Moneyline, Totals, Spreads, NRFI/YRFI, Corners, BTTS, F5, F3, and Multi-Leg Parlays/SGPs.
     """
 
-    def __init__(self, kalshi_client: KalshiClient, mappings_file: Path = TEAM_MAPPINGS_FILE):
+    def __init__(self, kalshi_client: Optional[KalshiClient] = None, mappings_file: Path = TEAM_MAPPINGS_FILE):
         self.client = kalshi_client
         self.team_mappings = self._load_mappings(mappings_file)
+
+    @staticmethod
+    def parse_pick_date(date_str: str) -> Optional[datetime.date]:
+        """
+        Parses a date string from the picks sheet into a datetime.date object.
+        Supports M/D/YYYY, M/D/YY, M/D, YYYY-MM-DD, etc.
+        """
+        if not date_str:
+            return None
+        date_str = date_str.strip()
+        parts = [p for p in re.split(r"[/.-]", date_str) if p.isdigit()]
+        if len(parts) >= 2:
+            try:
+                m = int(parts[0])
+                d = int(parts[1])
+                if len(parts) >= 3:
+                    y = int(parts[2])
+                    if y < 100:
+                        y += 2000
+                else:
+                    y = datetime.date.today().year
+                return datetime.date(y, m, d)
+            except Exception:
+                pass
+        try:
+            return datetime.date.fromisoformat(date_str)
+        except Exception:
+            pass
+        return None
+
+    @staticmethod
+    def extract_event_date(ev: Dict[str, Any]) -> Optional[datetime.date]:
+        """
+        Extracts the scheduled event/game date from a Kalshi event dictionary.
+        Checks event_ticker (YYMMMDD), sub_title / title ('Sep 9'), and market dates.
+        """
+        et = ev.get("event_ticker", "").upper()
+        # 1. Event ticker format: -26SEP091310MINDET or -24AUG24-TBR
+        m = re.search(r"-(\d{2})([A-Z]{3})(\d{2})", et)
+        if m:
+            y = 2000 + int(m.group(1))
+            mon_str = m.group(2)
+            d = int(m.group(3))
+            if mon_str in MONTHS_MAP:
+                try:
+                    return datetime.date(y, MONTHS_MAP[mon_str], d)
+                except ValueError:
+                    pass
+
+        # Format without year: -SEP09
+        m2 = re.search(r"-([A-Z]{3})(\d{2})", et)
+        if m2:
+            mon_str = m2.group(1)
+            d = int(m2.group(2))
+            if mon_str in MONTHS_MAP:
+                try:
+                    return datetime.date(datetime.date.today().year, MONTHS_MAP[mon_str], d)
+                except ValueError:
+                    pass
+
+        # 2. Subtitle / title format: '(Sep 9)' or 'Sep 9'
+        text = f"{ev.get('sub_title', '')} {ev.get('title', '')}"
+        m3 = re.search(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})\b", text, re.IGNORECASE)
+        if m3:
+            mon_str = m3.group(1)[:3].upper()
+            d = int(m3.group(2))
+            if mon_str in MONTHS_MAP:
+                try:
+                    return datetime.date(datetime.date.today().year, MONTHS_MAP[mon_str], d)
+                except ValueError:
+                    pass
+
+        # 3. Markets
+        markets = ev.get("markets", [])
+        if markets and isinstance(markets, list):
+            m0 = markets[0]
+            for tf in ["occurrence_datetime", "expected_expiration_time", "close_time"]:
+                ts = m0.get(tf)
+                if ts and isinstance(ts, str) and len(ts) >= 10:
+                    try:
+                        return datetime.date.fromisoformat(ts[:10])
+                    except Exception:
+                        pass
+
+        return None
+
+    @staticmethod
+    def is_event_date_matching(ev_date: Optional[datetime.date], target_date: Optional[datetime.date]) -> bool:
+        """
+        Returns True if the event date matches the target pick date.
+        If target_date is not provided or ev_date cannot be determined, returns True.
+        Requires month and day to match.
+        """
+        if target_date is None or ev_date is None:
+            return True
+        return ev_date.month == target_date.month and ev_date.day == target_date.day
 
     def _load_mappings(self, filepath: Path) -> Dict[str, Dict[str, str]]:
         if not filepath.exists():
@@ -197,7 +300,7 @@ class MarketMatcher:
                         "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                         "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
                         "NCAAF": ["KXNCAAFTEAMTOTAL", "KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
-                        "NFL": ["KXNFLTEAMTOTAL", "KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFL1HTEAMTOTAL"],
+                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HTEAMTOTAL"],
                         "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
                         "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
                         "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
@@ -248,7 +351,7 @@ class MarketMatcher:
                 "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                 "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
                 "NCAAF": ["KXNCAAFTEAMTOTAL", "KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
-                "NFL": ["KXNFLTEAMTOTAL", "KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFL1HTEAMTOTAL"],
+                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HTEAMTOTAL"],
                 "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
                 "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
                 "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
@@ -317,26 +420,24 @@ class MarketMatcher:
         num_match = re.search(r"[ouOU]?\s*([+-]?\d+(?:\.\d+)?)", pick.play)
         target_number = abs(float(num_match.group(1))) if num_match else None
 
-        # Filter and score live events for relevance
-        date_code = ""
-        try:
-            parts = [int(p) for p in pick.date.split("/") if p.isdigit()]
-            if len(parts) >= 2:
-                m, d = parts[0], parts[1]
-                y = parts[2] if len(parts) >= 3 else 2026
-                dt = datetime.date(y, m, d)
-                date_code = f"{dt.strftime('%y')}{dt.strftime('%b').upper()}{d:02d}"
-        except Exception:
-            pass
+        # Parse target pick date and format date code
+        target_date = self.parse_pick_date(pick.date)
+        date_code = target_date.strftime("%y%b%d").upper() if target_date else ""
 
         def score_event(ev: Dict[str, Any]) -> int:
             score = 0
             et = ev.get("event_ticker", "").upper()
             title = ev.get("title", "").lower()
             
-            # Date bonus
-            if date_code and date_code in et:
-                score += 100
+            # Strict date evaluation: event date MUST match target pick date
+            ev_date = self.extract_event_date(ev)
+            if target_date and ev_date:
+                if self.is_event_date_matching(ev_date, target_date):
+                    score += 500  # Massive bonus for exact date match
+                else:
+                    return -999999  # Disqualify events with mismatched dates
+            elif date_code and date_code in et:
+                score += 500
             
             # Series category match bonus
             if is_corner and ("TCORNER" in et or "team corner" in title):
@@ -361,12 +462,14 @@ class MarketMatcher:
                 score += 50
             elif is_game_total and ("TOTAL" in et or "total" in title) and "TEAM" not in et:
                 score += 80
-            elif is_game_total and ("TEAMTOTAL" in et or "team total" in title):
-                score -= 50  # Avoid team total events when matching a game total
             elif is_spread and ("SPREAD" in et or "spread" in title or "margin" in title):
+                score += 80
+            elif is_spread and ("TEAMTOTAL" in et or "TOTAL" in et):
+                score -= 100
+            elif is_ml and ("GAME" in et or "MATCH" in et) and "SPREAD" not in et and "TOTAL" not in et:
                 score += 50
-            elif is_ml and ("GAME" in et or "MATCH" in et):
-                score += 30
+            elif is_ml and ("TEAMTOTAL" in et or "TOTAL" in et or "SPREAD" in et):
+                score -= 100
 
             # Dual team match bonus
             matched_teams = 0
@@ -386,6 +489,29 @@ class MarketMatcher:
             event_title = event.get("title", "").lower()
             event_ticker = event.get("event_ticker", "").lower()
             sub_title = event.get("sub_title", "").lower()
+
+            # Strict date match filter: game date must match the spreadsheet date
+            ev_date = self.extract_event_date(event)
+            if target_date and ev_date and not self.is_event_date_matching(ev_date, target_date):
+                continue
+
+            # Sport-level prefix filter
+            sport_prefixes = {
+                "MLB": ["KXMLB", "KXNRFI"],
+                "NFL": ["KXNFL"],
+                "NCAAF": ["KXNCAAF"],
+                "NBA": ["KXNBA"],
+                "WNBA": ["KXWNBA"],
+                "NHL": ["KXNHL"],
+                "KBO": ["KXKBO"],
+                "NPB": ["KXNPB"],
+                "SOCCER": ["KXEPL", "KXLALIGA", "KXUCL", "KXSERIEA", "KXBUNDESLIGA", "KXMLS", "KXSOCCER"],
+                "EPL": ["KXEPL", "KXSOCCER"],
+                "TENNIS": ["KXATP", "KXWTA", "KXUSOPEN", "KXTENNIS"]
+            }
+            prefixes = sport_prefixes.get(sport_upper)
+            if prefixes and not any(event_ticker.upper().startswith(p) for p in prefixes):
+                continue
 
             sport_keywords = {
                 "MLB": ["mlb", "baseball", "nrfi", "rfi", "f5", "f3", "rbi", "home run", "strikeout", "run line"],
@@ -407,10 +533,16 @@ class MarketMatcher:
 
             # Check team/player overlap
             teams_matched = False
-            for t in teams_extracted + norm_teams:
-                if len(t) >= 2 and (t.lower() in event_title or t.lower() in sub_title or t.lower() in event_ticker):
+            ticker_suffix = event_ticker.split("-")[-1].upper() if "-" in event_ticker else event_ticker.upper()
+            for t_raw in teams_extracted:
+                if len(t_raw) >= 3 and (re.search(r"\b" + re.escape(t_raw) + r"\b", event_title, re.IGNORECASE) or re.search(r"\b" + re.escape(t_raw) + r"\b", sub_title, re.IGNORECASE)):
                     teams_matched = True
                     break
+            if not teams_matched:
+                for t_code in norm_teams:
+                    if t_code and (t_code.upper() in ticker_suffix or re.search(r"\b" + re.escape(t_code) + r"\b", event_title, re.IGNORECASE) or re.search(r"\b" + re.escape(t_code) + r"\b", sub_title, re.IGNORECASE)):
+                        teams_matched = True
+                        break
 
             if not teams_matched:
                 continue
@@ -571,7 +703,7 @@ class MarketMatcher:
                     break
 
             # 4. Handle Spreads / Margin
-            elif is_spread:
+            elif is_spread and ("SPREAD" in event_ticker.upper() or "spread" in event_title or "margin" in event_title or "run line" in event_title):
                 is_dog = "+" in play_lower
                 candidate_markets = []
                 for mkt in markets:
@@ -637,7 +769,8 @@ class MarketMatcher:
                 exchange_index=int(ex_idx) if ex_idx is not None else None
             )
 
+        date_str = f" on {pick.date}" if pick.date else ""
         return MatchResult(
             matched=False,
-            reason=f"No active Kalshi market found matching '{pick.play}' ({pick.sport} - {pick.market})."
+            reason=f"No active Kalshi market found matching '{pick.play}' ({pick.sport} - {pick.market}){date_str}."
         )
