@@ -256,3 +256,203 @@ class TestMarketMatcher:
         assert res.event_ticker == "KXNFLSPREAD-26SEP09NESEA"
         assert res.ticker == "KXNFLSPREAD-26SEP09NESEA-SEA4"
         assert res.side == "no"
+
+    def test_nfl_comprehensive_suite(self, matcher):
+        mock_events = [
+            # Full Game Spread: KC vs BAL
+            {
+                "event_ticker": "KXNFLSPREAD-26SEP09KCBAL",
+                "title": "Kansas City vs Baltimore: Spread",
+                "sub_title": "KC vs BAL (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLSPREAD-26SEP09KCBAL-KC4", "title": "Kansas City wins by over 3.5 points?", "yes_ask": 51},
+                    {"ticker": "KXNFLSPREAD-26SEP09KCBAL-BAL4", "title": "Baltimore wins by over 3.5 points?", "yes_ask": 49}
+                ]
+            },
+            # Full Game Spread: SF vs NYJ
+            {
+                "event_ticker": "KXNFLSPREAD-26SEP09SFNYJ",
+                "title": "San Francisco vs New York Jets: Spread",
+                "sub_title": "SF vs NYJ (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLSPREAD-26SEP09SFNYJ-SF4", "title": "San Francisco wins by over 3.5 points?", "yes_ask": 54},
+                    {"ticker": "KXNFLSPREAD-26SEP09SFNYJ-NYJ4", "title": "New York Jets wins by over 3.5 points?", "yes_ask": 46}
+                ]
+            },
+            # Full Game Moneyline: DET vs LAR
+            {
+                "event_ticker": "KXNFLGAME-26SEP09DETLAR",
+                "title": "Detroit vs Los Angeles Rams",
+                "sub_title": "DET vs LAR (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLGAME-26SEP09DETLAR-DET", "title": "Detroit to win", "yes_ask": 65},
+                    {"ticker": "KXNFLGAME-26SEP09DETLAR-LAR", "title": "Los Angeles Rams to win", "yes_ask": 35}
+                ]
+            },
+            # Full Game Total: KC vs BAL
+            {
+                "event_ticker": "KXNFLTOTAL-26SEP09KCBAL",
+                "title": "Kansas City vs Baltimore: Total Points",
+                "sub_title": "KC vs BAL (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLTOTAL-26SEP09KCBAL-47", "title": "Total points over 46.5?", "yes_ask": 52}
+                ]
+            },
+            # Team Total: KC
+            {
+                "event_ticker": "KXNFLTEAMTOTAL-26SEP09KCBAL",
+                "title": "Kansas City vs Baltimore: Team Total",
+                "sub_title": "KC vs BAL (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFLTEAMTOTAL-26SEP09KCBAL-KC25", "title": "Kansas City total points over 24.5", "yes_ask": 53}
+                ]
+            },
+            # 1H Spread: KC vs BAL
+            {
+                "event_ticker": "KXNFL1HSPREAD-26SEP09KCBAL",
+                "title": "Kansas City vs Baltimore: 1st Half Spread",
+                "sub_title": "KC vs BAL 1H (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFL1HSPREAD-26SEP09KCBAL-KC2", "title": "Kansas City 1H spread by over 1.5 points?", "yes_ask": 50}
+                ]
+            },
+            # 1H Moneyline: KC vs BAL
+            {
+                "event_ticker": "KXNFL1H-26SEP09KCBAL",
+                "title": "Kansas City vs Baltimore: 1st Half Winner",
+                "sub_title": "KC vs BAL 1H (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFL1H-26SEP09KCBAL-KC", "title": "Kansas City to win 1st Half", "yes_ask": 58}
+                ]
+            },
+            # 1H Total: KC vs BAL
+            {
+                "event_ticker": "KXNFL1HTOTAL-26SEP09KCBAL",
+                "title": "Kansas City vs Baltimore: 1st Half Total",
+                "sub_title": "KC vs BAL 1H (Sep 9)",
+                "category": "sports",
+                "markets": [
+                    {"ticker": "KXNFL1HTOTAL-26SEP09KCBAL-24", "title": "Total 1H points over 23.5?", "yes_ask": 50}
+                ]
+            }
+        ]
+
+        # 1. Favorite Spread: Chiefs -3.5 -> yes on KC4
+        p_fav = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Chiefs -3.5",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kc_spread"
+        )
+        r_fav = matcher.match_pick(p_fav, live_events=mock_events)
+        assert r_fav.matched is True
+        assert r_fav.ticker == "KXNFLSPREAD-26SEP09KCBAL-KC4"
+        assert r_fav.side == "yes"
+
+        # 2. Numbered team name: 49ers -3.5 -> yes on SF4
+        p_49ers = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="49ers -3.5",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="sf_spread"
+        )
+        r_49ers = matcher.match_pick(p_49ers, live_events=mock_events)
+        assert r_49ers.matched is True
+        assert r_49ers.ticker == "KXNFLSPREAD-26SEP09SFNYJ-SF4"
+        assert r_49ers.side == "yes"
+
+        # 3. Moneyline: Lions ML -> yes on DET
+        p_ml = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Lions ML",
+            market="Moneyline", odds_raw="-180", odds_numeric=-180.0,
+            implied_cents=64, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="det_ml"
+        )
+        r_ml = matcher.match_pick(p_ml, live_events=mock_events)
+        assert r_ml.matched is True
+        assert r_ml.ticker == "KXNFLGAME-26SEP09DETLAR-DET"
+        assert r_ml.side == "yes"
+
+        # 4. Game Total: Ravens / Chiefs Over 46.5 -> yes on 47
+        p_total = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Ravens / Chiefs Over 46.5",
+            market="Game Total", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kc_bal_total"
+        )
+        r_total = matcher.match_pick(p_total, live_events=mock_events)
+        assert r_total.matched is True
+        assert r_total.ticker == "KXNFLTOTAL-26SEP09KCBAL-47"
+        assert r_total.side == "yes"
+
+        # 5. Team Total: Chiefs Over 24.5 TT -> yes on KC25 (strictly avoids full game total)
+        p_tt = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Chiefs Over 24.5 TT",
+            market="Team Total", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kc_tt"
+        )
+        r_tt = matcher.match_pick(p_tt, live_events=mock_events)
+        assert r_tt.matched is True
+        assert r_tt.ticker == "KXNFLTEAMTOTAL-26SEP09KCBAL-KC25"
+        assert r_tt.side == "yes"
+
+        # 6. 1H Spread: Chiefs 1H -1.5 -> yes on KC2 (strictly avoids full game spread)
+        p_1h_spread = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Chiefs 1H -1.5",
+            market="First Half Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kc_1h_spread"
+        )
+        r_1h_spread = matcher.match_pick(p_1h_spread, live_events=mock_events)
+        assert r_1h_spread.matched is True
+        assert r_1h_spread.ticker == "KXNFL1HSPREAD-26SEP09KCBAL-KC2"
+        assert r_1h_spread.side == "yes"
+
+        # 7. 1H Moneyline: Chiefs 1H ML -> yes on KC
+        p_1h_ml = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Chiefs 1H ML",
+            market="First Half Moneyline", odds_raw="-130", odds_numeric=-130.0,
+            implied_cents=56, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kc_1h_ml"
+        )
+        r_1h_ml = matcher.match_pick(p_1h_ml, live_events=mock_events)
+        assert r_1h_ml.matched is True
+        assert r_1h_ml.ticker == "KXNFL1H-26SEP09KCBAL-KC"
+        assert r_1h_ml.side == "yes"
+
+        # 8. 1H Total: Ravens / Chiefs 1H Over 23.5 -> yes on 24
+        p_1h_total = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Ravens / Chiefs 1H Over 23.5",
+            market="First Half Total", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kc_1h_total"
+        )
+        r_1h_total = matcher.match_pick(p_1h_total, live_events=mock_events)
+        assert r_1h_total.matched is True
+        assert r_1h_total.ticker == "KXNFL1HTOTAL-26SEP09KCBAL-24"
+        assert r_1h_total.side == "yes"
+
+        # 9. Multi-leg NFL Parlay: Chiefs -3.5 + Lions ML
+        p_parlay = PickRecord(
+            day="1", date="9/9/2026", sport="NFL", play="Chiefs -3.5 + Lions ML",
+            market="Parlay", odds_raw="+260", odds_numeric=260.0,
+            implied_cents=27, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="nfl_parlay"
+        )
+        r_parlay = matcher.match_pick(p_parlay, live_events=mock_events)
+        assert r_parlay.matched is True
+        assert r_parlay.is_combo is True
+        assert len(r_parlay.combo_legs) == 2
+        assert r_parlay.combo_legs[0]["market_ticker"] == "KXNFLSPREAD-26SEP09KCBAL-KC4"
+        assert r_parlay.combo_legs[0]["side"] == "yes"
+        assert r_parlay.combo_legs[1]["market_ticker"] == "KXNFLGAME-26SEP09DETLAR-DET"
+        assert r_parlay.combo_legs[1]["side"] == "yes"
+

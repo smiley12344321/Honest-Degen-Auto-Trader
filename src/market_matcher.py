@@ -167,9 +167,11 @@ class MarketMatcher:
         """
         Extracts team names or abbreviations from a play string.
         """
-        clean_play = re.sub(r"\b[ouOU]?\s*[+-]?\d+(?:\.\d+)?.*", "", play)
-        clean_play = re.sub(r"\b(ML|F5|F3|F7|NRFI|YRFI|Over|Under|Spread|Run Line|Total|Sets?|Games?)\b.*", "", clean_play, flags=re.IGNORECASE).strip()
+        clean_play = re.sub(r"\b(1H|2H|1Q|2Q|3Q|4Q|F5|F3|F7|ML|NRFI|YRFI|Over|Under|Spread|Run Line|Total|Sets?|Games?|TT|Team Total)\b.*", "", play, flags=re.IGNORECASE).strip()
+        clean_play = re.sub(r"(?<!\w)[ouOU]?\s*[+-]\d+(?:\.\d+)?.*", "", clean_play).strip()
+        clean_play = re.sub(r"\b(?<!\w)\d+(?:\.\d+)?\s*(?:runs?|points?|goals?|games?)\b.*", "", clean_play, flags=re.IGNORECASE).strip()
         clean_play = re.sub(r"\s+[ouOU]$", "", clean_play).strip()
+        clean_play = re.sub(r"\b\d+(?:\.\d+)?\b.*", "", clean_play).strip()
         
         # Split on separators like '/', 'vs', 'vs.', '@'
         split_pattern = r"\s*(?:/|vs\.?|@|\band\b)\s*"
@@ -252,6 +254,15 @@ class MarketMatcher:
                     sub_market = "BTTS"
                 elif "team total" in leg_lower or " tt" in leg_lower or "tt " in leg_lower or "(tt)" in leg_lower:
                     sub_market = "Team Total"
+                elif "1h" in leg_lower or "first half" in leg_lower:
+                    if "total" in leg_lower or "over" in leg_lower or "under" in leg_lower or re.search(r"[ou]\s*\d", leg_lower):
+                        sub_market = "First Half Total"
+                    elif "+" in leg_lower or "-" in leg_lower or "spread" in leg_lower:
+                        sub_market = "First Half Spread"
+                    elif "ml" in leg_lower or "win" in leg_lower:
+                        sub_market = "First Half Moneyline"
+                    else:
+                        sub_market = "First Half Moneyline"
                 elif "f5" in leg_lower or "first 5" in leg_lower:
                     if "total" in leg_lower or "over" in leg_lower or "under" in leg_lower or re.search(r"[ou]\s*\d", leg_lower):
                         sub_market = "First 5 Total"
@@ -296,11 +307,11 @@ class MarketMatcher:
                 if not leg_res.matched and self.client:
                     # Targeted sport series fallback for this leg
                     sport_series_map = {
-                        "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
+                        "MLB": ["KXMLBSPREAD", "KXMLBGAME", "KXMLBTOTAL", "KXMLBTEAMTOTAL", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
                         "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                         "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
-                        "NCAAF": ["KXNCAAFTEAMTOTAL", "KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
-                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HTEAMTOTAL"],
+                        "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
+                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL"],
                         "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
                         "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
                         "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
@@ -350,8 +361,8 @@ class MarketMatcher:
                 "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
                 "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                 "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
-                "NCAAF": ["KXNCAAFTEAMTOTAL", "KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL"],
-                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HTEAMTOTAL"],
+                "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
+                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL"],
                 "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
                 "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
                 "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
@@ -398,13 +409,17 @@ class MarketMatcher:
             or "(team total)" in play_lower
             or "(tt)" in play_lower
         ) and not is_corner and not is_btts
-        is_f5_total = (("f5" in market_lower or "first 5" in market_lower or "f5" in play_lower) and ("total" in market_lower or "over" in play_lower or "under" in play_lower or re.search(r"[ou]\s*\d", play_lower))) and not is_team_total
-        is_f5 = ("f5" in market_lower or "f5" in play_lower or "first 5" in market_lower) and not is_f5_total and not is_team_total
-        is_f3 = "f3" in market_lower or "f3" in play_lower or "first 3" in market_lower
-        is_spread = ("spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or ("+" in play_lower and not is_corner) or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and not is_f5_total and not is_team_total and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)))) and not is_corner and not is_btts and not is_team_total
-        is_ml = ("moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower) and not is_corner and not is_btts and not is_f5_total and not is_team_total and not is_spread
-        is_game_total = (("game total" in market_lower or "total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower or "goals" in market_lower or re.search(r"\b[ou]\d+", play_lower)) or is_f5_total) and not is_team_total and not is_corner and not is_btts
-        is_total = (is_game_total or is_f5_total or is_team_total) and not is_corner and not is_btts
+        is_1h_total = (("1h" in market_lower or "first half" in market_lower or "1h" in play_lower or "first half" in play_lower) and ("total" in market_lower or "over" in play_lower or "under" in play_lower or re.search(r"[ou]\s*\d", play_lower))) and not is_team_total
+        is_1h_spread = (("1h" in market_lower or "first half" in market_lower or "1h" in play_lower or "first half" in play_lower) and ("spread" in market_lower or "+" in play_lower or re.search(r"-\d", play_lower))) and not is_1h_total and not is_team_total
+        is_1h_ml = ("1h" in market_lower or "first half" in market_lower or "1h" in play_lower or "first half" in play_lower) and not is_1h_total and not is_1h_spread and not is_team_total
+        is_1h = is_1h_total or is_1h_spread or is_1h_ml
+        is_f5_total = (("f5" in market_lower or "first 5" in market_lower or "f5" in play_lower) and ("total" in market_lower or "over" in play_lower or "under" in play_lower or re.search(r"[ou]\s*\d", play_lower))) and not is_team_total and not is_1h
+        is_f5 = ("f5" in market_lower or "f5" in play_lower or "first 5" in market_lower) and not is_f5_total and not is_team_total and not is_1h
+        is_f3 = ("f3" in market_lower or "f3" in play_lower or "first 3" in market_lower) and not is_1h
+        is_spread = ("spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or ("+" in play_lower and not is_corner) or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and not is_f5_total and not is_1h_total and not is_team_total and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)) and ("1h" not in play_lower or re.search(r"1h\s*[+-]", play_lower)))) and not is_corner and not is_btts and not is_team_total and not is_1h_total
+        is_ml = ("moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower) and not is_corner and not is_btts and not is_f5_total and not is_1h_total and not is_team_total and not is_spread and not is_1h_spread
+        is_game_total = (("game total" in market_lower or "total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower or "goals" in market_lower or re.search(r"\b[ou]\d+", play_lower)) or is_f5_total or is_1h_total) and not is_team_total and not is_corner and not is_btts
+        is_total = (is_game_total or is_f5_total or is_1h_total or is_team_total) and not is_corner and not is_btts
         is_explicit_no = play_lower.startswith("no ") or play_lower.startswith("no ·") or "to win: no" in play_lower
 
         # Search through live events for best match
@@ -450,6 +465,16 @@ class MarketMatcher:
                 score += 150
             elif is_team_total and ("TOTAL" in et or "total" in title):
                 score -= 50  # Strongly avoid game total events when matching a team total
+            elif is_1h_total and ("1HTOTAL" in et or "first half total" in title or "1h total" in title):
+                score += 150
+            elif is_1h_spread and ("1HSPREAD" in et or "first half spread" in title or "1h spread" in title):
+                score += 150
+            elif is_1h_ml and ("1H" in et or "first half" in title) and "SPREAD" not in et and "TOTAL" not in et:
+                score += 150
+            elif not is_1h and ("1H" in et or "first half" in title):
+                score -= 150  # Penalize 1H when a full game or other market is requested
+            elif not (is_f5 or is_f5_total or is_f3) and ("F5" in et or "first 5" in title):
+                score -= 150  # Penalize F5 when full game is requested
             elif is_f5_total and ("F5TOTAL" in et or "first 5 total" in title):
                 score += 120
             elif is_f5 and is_spread and ("F5SPREAD" in et or "first 5 spread" in title):
@@ -460,13 +485,13 @@ class MarketMatcher:
                 score += 50
             elif is_nrfi and ("RFI" in et or "1INNING" in et or "first inning" in title or "1st inning" in title):
                 score += 50
-            elif is_game_total and ("TOTAL" in et or "total" in title) and "TEAM" not in et:
+            elif is_game_total and ("TOTAL" in et or "total" in title) and "TEAM" not in et and "1H" not in et and "F5" not in et:
                 score += 80
-            elif is_spread and ("SPREAD" in et or "spread" in title or "margin" in title):
+            elif is_spread and ("SPREAD" in et or "spread" in title or "margin" in title) and "1H" not in et and "F5" not in et:
                 score += 80
             elif is_spread and ("TEAMTOTAL" in et or "TOTAL" in et):
                 score -= 100
-            elif is_ml and ("GAME" in et or "MATCH" in et) and "SPREAD" not in et and "TOTAL" not in et:
+            elif is_ml and ("GAME" in et or "MATCH" in et) and "SPREAD" not in et and "TOTAL" not in et and "1H" not in et and "F5" not in et:
                 score += 50
             elif is_ml and ("TEAMTOTAL" in et or "TOTAL" in et or "SPREAD" in et):
                 score -= 100
@@ -493,6 +518,20 @@ class MarketMatcher:
             # Strict date match filter: game date must match the spreadsheet date
             ev_date = self.extract_event_date(event)
             if target_date and ev_date and not self.is_event_date_matching(ev_date, target_date):
+                continue
+
+            # 1H / Full game isolation
+            is_event_1h = "1h" in event_ticker or "1h" in event_title or "first half" in event_title or "1st half" in event_title
+            if is_1h and not is_event_1h:
+                continue
+            if not is_1h and is_event_1h:
+                continue
+
+            # F5 / Full game isolation
+            is_event_f5 = "f5" in event_ticker or "first 5" in event_title
+            if (is_f5 or is_f5_total) and not is_event_f5:
+                continue
+            if not (is_f5 or is_f5_total or is_f3) and is_event_f5:
                 continue
 
             # Sport-level prefix filter
@@ -652,8 +691,8 @@ class MarketMatcher:
                     best_event = event
                     break
 
-            # 5. Handle F3, F5 Moneyline, and Full Game Moneyline
-            elif (is_f5 and not is_spread) or is_f3 or (is_ml and not is_spread):
+            # 5. Handle F3, F5 Moneyline, 1H Moneyline, and Full Game Moneyline
+            elif (is_f5 and not is_spread) or is_f3 or (is_ml and not is_spread) or (is_1h_ml and not is_1h_spread):
                 for mkt in markets:
                     m_title = mkt.get("title", "").lower()
                     m_ticker = mkt.get("ticker", "").upper()
@@ -703,7 +742,7 @@ class MarketMatcher:
                     break
 
             # 4. Handle Spreads / Margin
-            elif is_spread and ("SPREAD" in event_ticker.upper() or "spread" in event_title or "margin" in event_title or "run line" in event_title):
+            elif (is_spread or is_1h_spread or (is_f5 and is_spread)) and ("SPREAD" in event_ticker.upper() or "spread" in event_title or "margin" in event_title or "run line" in event_title):
                 is_dog = "+" in play_lower
                 candidate_markets = []
                 for mkt in markets:
