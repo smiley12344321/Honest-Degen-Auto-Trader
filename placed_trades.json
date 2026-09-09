@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-09T21:31:08.320882+00:00",
+  "last_updated": "2026-09-09T22:02:02.334139+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -977,6 +977,22 @@
       "count_fp": "2.34",
       "actual_risk_dollars": 0.7488,
       "order_id": "01a0877e-eb08-7556-8f30-6b04e477c4f7",
+      "simulated": false
+    },
+    "a770a480b95ff4e9": {
+      "trade_id": "a770a480b95ff4e9",
+      "date_placed": "2026-09-09T22:02:02.092194+00:00",
+      "play": "Pirates F5 +0.5",
+      "sport": "MLB",
+      "market": "F5 Run Line",
+      "sheet_odds": "-115",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBF5-26SEP091940PITCWS-CWS",
+      "kalshi_side": "no",
+      "price_cents": 53,
+      "count_fp": "1.42",
+      "actual_risk_dollars": 0.7526,
+      "order_id": "01a08831-3790-7b95-8c6b-6fbddc1c2577",
       "simulated": false
     }
   }
