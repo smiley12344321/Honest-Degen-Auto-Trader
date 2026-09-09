@@ -456,3 +456,75 @@ class TestMarketMatcher:
         assert r_parlay.combo_legs[1]["market_ticker"] == "KXNFLGAME-26SEP09DETLAR-DET"
         assert r_parlay.combo_legs[1]["side"] == "yes"
 
+    def test_f5_half_spread_matching(self, matcher):
+        mock_f5_events = [
+            {
+                "event_ticker": "KXMLBF5-26SEP091940PITCWS",
+                "title": "Pittsburgh vs Chicago WS: First 5 Innings",
+                "markets": [
+                    {"ticker": "KXMLBF5-26SEP091940PITCWS-PIT", "title": "Pittsburgh first 5 innings winner"},
+                    {"ticker": "KXMLBF5-26SEP091940PITCWS-CWS", "title": "Chicago WS first 5 innings winner"},
+                    {"ticker": "KXMLBF5-26SEP091940PITCWS-TIE", "title": "first 5 innings tie"}
+                ]
+            },
+            {
+                "event_ticker": "KXMLBF5SPREAD-26SEP091940PITCWS",
+                "title": "Pittsburgh vs Chicago WS: First 5 Spread",
+                "markets": [
+                    {"ticker": "KXMLBF5SPREAD-26SEP091940PITCWS-CWS2", "title": "Chicago WS wins first 5 innings by over 1.5 runs?"},
+                    {"ticker": "KXMLBF5SPREAD-26SEP091940PITCWS-PIT2", "title": "Pittsburgh wins first 5 innings by over 1.5 runs?"}
+                ]
+            }
+        ]
+
+        # 1. Pirates F5 +0.5 -> NO Chicago WS first 5 innings winner
+        p_plus_half = PickRecord(
+            day="1", date="9/9/2026", sport="MLB", play="Pirates F5 +0.5",
+            market="F5 Run Line", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="pit_f5_plus"
+        )
+        r_plus_half = matcher.match_pick(p_plus_half, live_events=mock_f5_events)
+        assert r_plus_half.matched is True
+        assert r_plus_half.event_ticker == "KXMLBF5-26SEP091940PITCWS"
+        assert r_plus_half.ticker == "KXMLBF5-26SEP091940PITCWS-CWS"
+        assert r_plus_half.side == "no"
+
+        # 2. White Sox F5 +0.5 -> NO Pittsburgh first 5 innings winner
+        p_cws_plus_half = PickRecord(
+            day="1", date="9/9/2026", sport="MLB", play="White Sox F5 +0.5",
+            market="F5 Run Line", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="cws_f5_plus"
+        )
+        r_cws_plus_half = matcher.match_pick(p_cws_plus_half, live_events=mock_f5_events)
+        assert r_cws_plus_half.matched is True
+        assert r_cws_plus_half.ticker == "KXMLBF5-26SEP091940PITCWS-PIT"
+        assert r_cws_plus_half.side == "no"
+
+        # 3. Pirates F5 -0.5 -> YES Pittsburgh first 5 innings winner
+        p_minus_half = PickRecord(
+            day="1", date="9/9/2026", sport="MLB", play="Pirates F5 -0.5",
+            market="F5 Run Line", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="pit_f5_minus"
+        )
+        r_minus_half = matcher.match_pick(p_minus_half, live_events=mock_f5_events)
+        assert r_minus_half.matched is True
+        assert r_minus_half.ticker == "KXMLBF5-26SEP091940PITCWS-PIT"
+        assert r_minus_half.side == "yes"
+
+        # 4. Pirates F5 +1.5 -> Routes to KXMLBF5SPREAD on CWS2 (no)
+        p_spread_15 = PickRecord(
+            day="1", date="9/9/2026", sport="MLB", play="Pirates F5 +1.5",
+            market="F5 Run Line", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="pit_f5_spread15"
+        )
+        r_spread_15 = matcher.match_pick(p_spread_15, live_events=mock_f5_events)
+        assert r_spread_15.matched is True
+        assert r_spread_15.event_ticker == "KXMLBF5SPREAD-26SEP091940PITCWS"
+        assert r_spread_15.ticker == "KXMLBF5SPREAD-26SEP091940PITCWS-CWS2"
+        assert r_spread_15.side == "no"
+
+

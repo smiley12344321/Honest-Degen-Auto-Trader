@@ -415,9 +415,12 @@ class MarketMatcher:
         is_1h = is_1h_total or is_1h_spread or is_1h_ml
         is_f5_total = (("f5" in market_lower or "first 5" in market_lower or "f5" in play_lower) and ("total" in market_lower or "over" in play_lower or "under" in play_lower or re.search(r"[ou]\s*\d", play_lower))) and not is_team_total and not is_1h
         is_f5 = ("f5" in market_lower or "f5" in play_lower or "first 5" in market_lower) and not is_f5_total and not is_team_total and not is_1h
+        is_f5_plus_half = is_f5 and bool(re.search(r"\+\s*(?:0\.5|1/2|\.5)\b", play_lower))
+        is_f5_minus_half = is_f5 and bool(re.search(r"-\s*(?:0\.5|1/2|\.5)\b", play_lower))
+        is_f5_half = is_f5_plus_half or is_f5_minus_half
         is_f3 = ("f3" in market_lower or "f3" in play_lower or "first 3" in market_lower) and not is_1h
-        is_spread = ("spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or ("+" in play_lower and not is_corner) or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and not is_f5_total and not is_1h_total and not is_team_total and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)) and ("1h" not in play_lower or re.search(r"1h\s*[+-]", play_lower)))) and not is_corner and not is_btts and not is_team_total and not is_1h_total
-        is_ml = ("moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower) and not is_corner and not is_btts and not is_f5_total and not is_1h_total and not is_team_total and not is_spread and not is_1h_spread
+        is_spread = ("spread" in market_lower or "run line" in market_lower or "spread" in play_lower or "wins by" in play_lower or ("+" in play_lower and not is_corner) or (re.search(r"-\d", play_lower) and not is_nrfi and not is_f3 and not is_f5_total and not is_1h_total and not is_team_total and ("f5" not in play_lower or re.search(r"f5\s*[+-]", play_lower)) and ("1h" not in play_lower or re.search(r"1h\s*[+-]", play_lower)))) and not is_corner and not is_btts and not is_team_total and not is_1h_total and not is_f5_half
+        is_ml = ("moneyline" in market_lower or "ml" in market_lower or "side" in market_lower or "win" in play_lower or "to win" in play_lower or is_f5_minus_half) and not is_corner and not is_btts and not is_f5_total and not is_1h_total and not is_team_total and not is_spread and not is_1h_spread
         is_game_total = (("game total" in market_lower or "total" in market_lower or "over" in play_lower or "under" in play_lower or "points" in market_lower or "runs" in market_lower or "goals" in market_lower or re.search(r"\b[ou]\d+", play_lower)) or is_f5_total or is_1h_total) and not is_team_total and not is_corner and not is_btts
         is_total = (is_game_total or is_f5_total or is_1h_total or is_team_total) and not is_corner and not is_btts
         is_explicit_no = play_lower.startswith("no ") or play_lower.startswith("no ·") or "to win: no" in play_lower
@@ -432,7 +435,10 @@ class MarketMatcher:
         primary_raw = teams_extracted[0] if teams_extracted else ""
 
         # Extract numerical total/spread line if present (e.g. 177, 3.5, 23.5)
-        num_match = re.search(r"[ouOU]?\s*([+-]?\d+(?:\.\d+)?)", pick.play)
+        clean_for_num = re.sub(r"\b(1H|2H|1Q|2Q|3Q|4Q|F5|F3|F7)\b", "", pick.play, flags=re.IGNORECASE)
+        num_match = re.search(r"(?:[+-]|[ouOU]\s*|over\s*|under\s*)\s*([+-]?\d+(?:\.\d+)?)", clean_for_num, flags=re.IGNORECASE)
+        if not num_match:
+            num_match = re.search(r"\b(\d+(?:\.\d+)?)\b(?![a-zA-Z])", clean_for_num)
         target_number = abs(float(num_match.group(1))) if num_match else None
 
         # Parse target pick date and format date code
@@ -477,6 +483,12 @@ class MarketMatcher:
                 score -= 150  # Penalize F5 when full game is requested
             elif is_f5_total and ("F5TOTAL" in et or "first 5 total" in title):
                 score += 120
+            elif is_f5 and is_f5_half:
+                # F5 +0.5 / -0.5 are covered directly by Kalshi's 3-way F5 event (KXMLBF5), NOT KXMLBF5SPREAD
+                if "F5" in et and "SPREAD" not in et and "TOTAL" not in et:
+                    score += 150
+                elif "SPREAD" in et or "TOTAL" in et:
+                    score -= 100
             elif is_f5 and is_spread and ("F5SPREAD" in et or "first 5 spread" in title):
                 score += 80
             elif is_f5 and not is_spread and ("F5" in et or "first 5" in title) and "SPREAD" not in et and "TOTAL" not in et:
@@ -691,8 +703,45 @@ class MarketMatcher:
                     best_event = event
                     break
 
-            # 5. Handle F3, F5 Moneyline, 1H Moneyline, and Full Game Moneyline
-            elif (is_f5 and not is_spread) or is_f3 or (is_ml and not is_spread) or (is_1h_ml and not is_1h_spread):
+            # 5a. Handle F5 +0.5 (Opponent NO in 3-way KXMLBF5)
+            elif is_f5_plus_half:
+                opponent_team = norm_teams[1] if len(norm_teams) >= 2 else None
+                opponent_raw = teams_extracted[1] if len(teams_extracted) >= 2 else None
+                for mkt in markets:
+                    m_title = mkt.get("title", "").lower()
+                    m_ticker = mkt.get("ticker", "").upper()
+                    m_suffix = m_ticker.split("-")[-1]
+
+                    if "tie" in m_title or m_suffix == "TIE":
+                        continue
+
+                    # If opponent team is explicitly extracted from play (e.g. Pirates/White Sox F5 +0.5)
+                    if opponent_team and (m_suffix == opponent_team.upper() or opponent_team.lower() in m_title):
+                        best_market = mkt
+                        best_side = "no"
+                        best_event = event
+                        break
+                    elif opponent_raw and (opponent_raw.lower() in m_title or m_suffix == opponent_raw.upper()):
+                        best_market = mkt
+                        best_side = "no"
+                        best_event = event
+                        break
+
+                    # If only primary team extracted (e.g. Pirates F5 +0.5), opponent is the OTHER non-tie market
+                    team_match = False
+                    if primary_team and (m_suffix == primary_team.upper() or primary_team.lower() in m_title):
+                        team_match = True
+                    elif primary_raw and (primary_raw.lower() in m_title or m_suffix == primary_raw.upper()):
+                        team_match = True
+
+                    if not team_match:
+                        best_market = mkt
+                        best_side = "no"
+                        best_event = event
+                        break
+
+            # 5b. Handle F5 -0.5, F3, F5 Moneyline, 1H Moneyline, and Full Game Moneyline
+            elif (is_f5 and not is_spread) or is_f3 or (is_ml and not is_spread) or (is_1h_ml and not is_1h_spread) or is_f5_minus_half:
                 for mkt in markets:
                     m_title = mkt.get("title", "").lower()
                     m_ticker = mkt.get("ticker", "").upper()
