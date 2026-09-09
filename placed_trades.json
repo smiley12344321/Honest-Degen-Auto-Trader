@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-09T15:19:36.145811+00:00",
+  "last_updated": "2026-09-09T18:47:17.850706+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -929,6 +929,54 @@
       "count_fp": "1.02",
       "actual_risk_dollars": 0.4998,
       "order_id": "01a08073-9e80-75ba-a29f-d71a06e871fb",
+      "simulated": false
+    },
+    "87440ea59020d773": {
+      "trade_id": "87440ea59020d773",
+      "date_placed": "2026-09-09T18:47:16.074841+00:00",
+      "play": "Tampa Bay ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "107",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP091915TBATL-TB",
+      "kalshi_side": "yes",
+      "price_cents": 47,
+      "count_fp": "1.60",
+      "actual_risk_dollars": 0.752,
+      "order_id": "01a0877e-e720-75bb-8917-e19416562c5b",
+      "simulated": false
+    },
+    "ffe4af372be89979": {
+      "trade_id": "ffe4af372be89979",
+      "date_placed": "2026-09-09T18:47:17.157019+00:00",
+      "play": "Marlins F5 ML",
+      "sport": "MLB",
+      "market": "F5 ML",
+      "sheet_odds": "-125",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBF5-26SEP091840NYMMIA-MIA",
+      "kalshi_side": "yes",
+      "price_cents": 45,
+      "count_fp": "1.11",
+      "actual_risk_dollars": 0.4995,
+      "order_id": "01a0877e-eb08-74ce-95ad-2afad3a67387",
+      "simulated": false
+    },
+    "48ca9da6b7d1d2a2": {
+      "trade_id": "48ca9da6b7d1d2a2",
+      "date_placed": "2026-09-09T18:47:17.596104+00:00",
+      "play": "Patriots +3.5",
+      "sport": "NFL",
+      "market": "Spread",
+      "sheet_odds": "-111",
+      "units": 1.5,
+      "kalshi_ticker": "KXNFLGAME-26SEP20PITNE-NE",
+      "kalshi_side": "no",
+      "price_cents": 32,
+      "count_fp": "2.34",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "01a0877e-eb08-7556-8f30-6b04e477c4f7",
       "simulated": false
     }
   }
