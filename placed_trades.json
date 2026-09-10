@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-10T15:54:42.470938+00:00",
+  "last_updated": "2026-09-10T18:58:46.733025+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1009,6 +1009,38 @@
       "count_fp": "1.63",
       "actual_risk_dollars": 0.7498,
       "order_id": "01a08c07-3e00-7b7b-80bc-cbc26bd977aa",
+      "simulated": false
+    },
+    "4171c5dc8039dc69": {
+      "trade_id": "4171c5dc8039dc69",
+      "date_placed": "2026-09-10T18:58:45.554270+00:00",
+      "play": "Pirates ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-110",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBGAME-26SEP101940PITCWS-PIT",
+      "kalshi_side": "yes",
+      "price_cents": 51,
+      "count_fp": "0.98",
+      "actual_risk_dollars": 0.4998,
+      "order_id": "01a08caf-c688-75b9-8b46-fc2cc7a27302",
+      "simulated": false
+    },
+    "581dedc73265dbc7": {
+      "trade_id": "581dedc73265dbc7",
+      "date_placed": "2026-09-10T18:58:46.292571+00:00",
+      "play": "Yankees -1.5",
+      "sport": "MLB",
+      "market": "Run Line",
+      "sheet_odds": "-128",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBSPREAD-26SEP101905COLNYY-NYY2",
+      "kalshi_side": "yes",
+      "price_cents": 55,
+      "count_fp": "1.36",
+      "actual_risk_dollars": 0.748,
+      "order_id": "01a08caf-ca70-753c-8de2-fab33365c427",
       "simulated": false
     }
   }
