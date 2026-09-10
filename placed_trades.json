@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-10T11:50:53.749892+00:00",
+  "last_updated": "2026-09-10T15:54:42.470938+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -993,6 +993,22 @@
       "count_fp": "1.42",
       "actual_risk_dollars": 0.7526,
       "order_id": "01a08831-3790-7b95-8c6b-6fbddc1c2577",
+      "simulated": false
+    },
+    "06e2733be7ba09e4": {
+      "trade_id": "06e2733be7ba09e4",
+      "date_placed": "2026-09-10T15:54:40.267071+00:00",
+      "play": "Tampa Bay ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "100",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP101215TBATL-TB",
+      "kalshi_side": "yes",
+      "price_cents": 46,
+      "count_fp": "1.63",
+      "actual_risk_dollars": 0.7498,
+      "order_id": "01a08c07-3e00-7b7b-80bc-cbc26bd977aa",
       "simulated": false
     }
   }
