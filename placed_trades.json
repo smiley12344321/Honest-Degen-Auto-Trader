@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-11T01:20:49.501303+00:00",
+  "last_updated": "2026-09-11T06:26:03.724261+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1041,6 +1041,22 @@
       "count_fp": "1.36",
       "actual_risk_dollars": 0.748,
       "order_id": "01a08caf-ca70-753c-8de2-fab33365c427",
+      "simulated": false
+    },
+    "753791d5ac67b88a": {
+      "trade_id": "753791d5ac67b88a",
+      "date_placed": "2026-09-11T06:26:03.113692+00:00",
+      "play": "Padres / Giants Under 8",
+      "sport": "MLB",
+      "market": "Total",
+      "sheet_odds": "-110",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBTOTAL-26SEP112215SDSF-8",
+      "kalshi_side": "no",
+      "price_cents": 47,
+      "count_fp": "1.06",
+      "actual_risk_dollars": 0.4982,
+      "order_id": "01a08f25-0478-7310-98d8-47ccbcd0376e",
       "simulated": false
     }
   }
