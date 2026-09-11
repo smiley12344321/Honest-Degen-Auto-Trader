@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-11T06:26:03.724261+00:00",
+  "last_updated": "2026-09-11T11:41:43.827019+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1057,6 +1057,22 @@
       "count_fp": "1.06",
       "actual_risk_dollars": 0.4982,
       "order_id": "01a08f25-0478-7310-98d8-47ccbcd0376e",
+      "simulated": false
+    },
+    "b0fa3b319c9aabce": {
+      "trade_id": "b0fa3b319c9aabce",
+      "date_placed": "2026-09-11T11:41:42.890231+00:00",
+      "play": "Seibu Lions ML",
+      "sport": "NPB",
+      "market": "Moneyline",
+      "sheet_odds": "-130",
+      "units": 1.5,
+      "kalshi_ticker": "KXNPBGAME-26SEP110500SAIORI-SAI",
+      "kalshi_side": "yes",
+      "price_cents": 56,
+      "count_fp": "1.34",
+      "actual_risk_dollars": 0.7504,
+      "order_id": "01a09046-00f0-74d3-9ced-10bfd61550e1",
       "simulated": false
     }
   }
