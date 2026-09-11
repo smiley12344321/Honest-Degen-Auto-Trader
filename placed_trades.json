@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-11T21:19:56.052984+00:00",
+  "last_updated": "2026-09-11T23:28:55.388487+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1121,6 +1121,22 @@
       "count_fp": "1.34",
       "actual_risk_dollars": 0.7504,
       "order_id": "01a09257-6078-754b-bd0b-ddf57cff8c67",
+      "simulated": false
+    },
+    "277712c3d9fedebe": {
+      "trade_id": "277712c3d9fedebe",
+      "date_placed": "2026-09-11T23:28:54.359460+00:00",
+      "play": "Dodgers/Marlins Over 7",
+      "sport": "MLB",
+      "market": "Game Total",
+      "sheet_odds": "-135",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBTOTAL-26SEP111910LADMIA-8",
+      "kalshi_side": "yes",
+      "price_cents": 39,
+      "count_fp": "1.92",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "01a092cd-76f0-78df-86cd-2782cc8fff91",
       "simulated": false
     }
   }
