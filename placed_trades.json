@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-13T01:18:28.080466+00:00",
+  "last_updated": "2026-09-13T06:34:33.826248+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1377,6 +1377,55 @@
       "count_fp": "2.16",
       "actual_risk_dollars": 1.2528,
       "order_id": "01a0954b-b978-7c72-b309-64416acff404",
+      "simulated": false
+    },
+    "05ea1b8ccb83055a": {
+      "trade_id": "05ea1b8ccb83055a",
+      "date_placed": "2026-09-13T06:34:32.548919+00:00",
+      "play": "KT Wiz ML & Seibu Lions ML",
+      "sport": "Baseball",
+      "market": "Parlay",
+      "sheet_odds": "155",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026D040FFD8626-1F824C7F947",
+      "kalshi_side": "yes",
+      "price_cents": 38,
+      "count_fp": "1.28",
+      "actual_risk_dollars": 0.4992,
+      "order_id": "rfq_f6b2c412-9ade-45ea-a09a-a126afcb05f0_6e6f08aa-951c-4c49-a203-726d20d97456",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "KT Wiz ML",
+          "market_ticker": "KXKBOGAME-26SEP130400LOTKTW-KTW",
+          "event_ticker": "KXKBOGAME-26SEP130400LOTKTW",
+          "side": "yes",
+          "market_title": "KT Wiz wins"
+        },
+        {
+          "leg_description": "Seibu Lions ML",
+          "market_ticker": "KXNPBGAME-26SEP130400HOKSAI-SAI",
+          "event_ticker": "KXNPBGAME-26SEP130400HOKSAI",
+          "side": "yes",
+          "market_title": "Saitama Seibu Lions wins"
+        }
+      ],
+      "simulated": false
+    },
+    "a73d6d6af66b2cf7": {
+      "trade_id": "a73d6d6af66b2cf7",
+      "date_placed": "2026-09-13T06:34:33.502383+00:00",
+      "play": "Doosan Bears ML",
+      "sport": "KBO",
+      "market": "Moneyline",
+      "sheet_odds": "-135",
+      "units": 1.0,
+      "kalshi_ticker": "KXKBOGAME-26SEP130400NCDDOO-DOO",
+      "kalshi_side": "yes",
+      "price_cents": 58,
+      "count_fp": "0.86",
+      "actual_risk_dollars": 0.4988,
+      "order_id": "01a09979-84a8-733b-94bd-8eedfb5f7639",
       "simulated": false
     }
   }
