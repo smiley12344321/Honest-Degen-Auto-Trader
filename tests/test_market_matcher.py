@@ -527,4 +527,93 @@ class TestMarketMatcher:
         assert r_spread_15.ticker == "KXMLBF5SPREAD-26SEP091940PITCWS-CWS2"
         assert r_spread_15.side == "no"
 
+    def test_ncaaf_state_vs_non_state_isolation(self, matcher):
+        mock_ncaaf_events = [
+            {
+                "event_ticker": "KXNCAAFSPREAD-26SEP12TTUORST",
+                "title": "Texas Tech at Oregon St. Spread",
+                "markets": [
+                    {"ticker": "KXNCAAFSPREAD-26SEP12TTUORST-TTU28", "title": "Texas Tech by over 27.5 points"},
+                    {"ticker": "KXNCAAFSPREAD-26SEP12TTUORST-ORST9", "title": "Oregon State by over 8.5 points"}
+                ]
+            },
+            {
+                "event_ticker": "KXNCAAFSPREAD-26SEP12OREOKST",
+                "title": "Oklahoma St. at Oregon Spread",
+                "markets": [
+                    {"ticker": "KXNCAAFSPREAD-26SEP12OREOKST-ORE25", "title": "Oregon by over 24.5 points"},
+                    {"ticker": "KXNCAAFSPREAD-26SEP12OREOKST-OKST10", "title": "Oklahoma State by over 9.5 points"}
+                ]
+            },
+            {
+                "event_ticker": "KXNCAAFSPREAD-26SEP12MSUBC",
+                "title": "Michigan State at Boston College Spread",
+                "markets": [
+                    {"ticker": "KXNCAAFSPREAD-26SEP12MSUBC-BC6", "title": "Boston College by over 5.5 points"},
+                    {"ticker": "KXNCAAFSPREAD-26SEP12MSUBC-MSU14", "title": "Michigan State by over 13.5 points"}
+                ]
+            },
+            {
+                "event_ticker": "KXNCAAFSPREAD-26SEP12MICHTEX",
+                "title": "Texas at Michigan Spread",
+                "markets": [
+                    {"ticker": "KXNCAAFSPREAD-26SEP12MICHTEX-MICH7", "title": "Michigan by over 6.5 points"},
+                    {"ticker": "KXNCAAFSPREAD-26SEP12MICHTEX-TEX14", "title": "Texas by over 13.5 points"}
+                ]
+            }
+        ]
+
+        # 1. Oregon State +26 -> Must match TTUORST, NOT OREOKST!
+        p_orst = PickRecord(
+            day="1", date="9/12/2026", sport="NCAAF", play="Oregon State +26",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="orst_spread"
+        )
+        r_orst = matcher.match_pick(p_orst, live_events=mock_ncaaf_events)
+        assert r_orst.matched is True
+        assert r_orst.event_ticker == "KXNCAAFSPREAD-26SEP12TTUORST"
+        assert r_orst.ticker == "KXNCAAFSPREAD-26SEP12TTUORST-TTU28"
+        assert r_orst.side == "no"
+
+        # 2. Oregon -26 (or Oregon -25) -> Must match OREOKST, NOT TTUORST!
+        p_ore = PickRecord(
+            day="1", date="9/12/2026", sport="NCAAF", play="Oregon -25",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="ore_spread"
+        )
+        r_ore = matcher.match_pick(p_ore, live_events=mock_ncaaf_events)
+        assert r_ore.matched is True
+        assert r_ore.event_ticker == "KXNCAAFSPREAD-26SEP12OREOKST"
+        assert r_ore.ticker == "KXNCAAFSPREAD-26SEP12OREOKST-ORE25"
+        assert r_ore.side == "yes"
+
+        # 3. Michigan State +6 -> Must match MSUBC, NOT MICHTEX!
+        p_msu = PickRecord(
+            day="1", date="9/12/2026", sport="NCAAF", play="Michigan State +6",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="msu_spread"
+        )
+        r_msu = matcher.match_pick(p_msu, live_events=mock_ncaaf_events)
+        assert r_msu.matched is True
+        assert r_msu.event_ticker == "KXNCAAFSPREAD-26SEP12MSUBC"
+        assert r_msu.ticker == "KXNCAAFSPREAD-26SEP12MSUBC-BC6"
+        assert r_msu.side == "no"
+
+        # 4. Michigan -7 -> Must match MICHTEX, NOT MSUBC!
+        p_mich = PickRecord(
+            day="1", date="9/12/2026", sport="NCAAF", play="Michigan -7",
+            market="Spread", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="mich_spread"
+        )
+        r_mich = matcher.match_pick(p_mich, live_events=mock_ncaaf_events)
+        assert r_mich.matched is True
+        assert r_mich.event_ticker == "KXNCAAFSPREAD-26SEP12MICHTEX"
+        assert r_mich.ticker == "KXNCAAFSPREAD-26SEP12MICHTEX-MICH7"
+        assert r_mich.side == "yes"
+
+
 

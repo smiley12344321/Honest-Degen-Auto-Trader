@@ -150,18 +150,118 @@ class MarketMatcher:
     def normalize_team(self, sport: str, raw_team_name: str) -> str:
         """
         Normalizes a team name/nickname using team_mappings.json.
+        Performs exact matching first, then longest-key token matching,
+        strictly distinguishing State / St. / Tech schools from their parent universities.
         """
         clean = raw_team_name.strip()
         sport_upper = sport.upper()
         
         sport_map = self.team_mappings.get(sport_upper, {})
+        if not sport_map:
+            return clean
+
+        clean_lower = clean.lower()
+
+        # Pass 1: Exact match (case-insensitive)
         for name_key, code in sport_map.items():
-            if name_key.lower() == clean.lower():
+            if name_key.lower() == clean_lower:
                 return code
-            # Check if name contains key word
-            if name_key.lower() in clean.lower():
+
+        # Pass 1b: Exact match with St./St normalized to State
+        expanded_clean = re.sub(r"\bst\.?\b", "state", clean_lower).strip()
+        if expanded_clean != clean_lower:
+            for name_key, code in sport_map.items():
+                if name_key.lower() == expanded_clean:
+                    return code
+
+        # Pass 2: Specificity-ordered matching (longest keys first)
+        has_state = bool(re.search(r"\b(state|st\.?)\b", clean_lower))
+        has_tech = bool(re.search(r"\btech\b", clean_lower))
+
+        sorted_items = sorted(sport_map.items(), key=lambda x: len(x[0]), reverse=True)
+        for name_key, code in sorted_items:
+            key_lower = name_key.lower()
+            key_has_state = bool(re.search(r"\b(state|st\.?)\b", key_lower))
+            key_has_tech = bool(re.search(r"\btech\b", key_lower))
+
+            # Strictly forbid matching non-State key if input has State, and vice versa
+            if has_state and not key_has_state:
+                continue
+            if not has_state and key_has_state:
+                continue
+            # Strictly forbid matching non-Tech key if input has Tech, and vice versa
+            if has_tech and not key_has_tech:
+                continue
+            if not has_tech and key_has_tech:
+                continue
+
+            # Word boundary match
+            pattern = r"\b" + re.escape(key_lower) + r"\b"
+            if re.search(pattern, clean_lower) or re.search(pattern, expanded_clean):
                 return code
+
         return clean
+
+    @staticmethod
+    def is_team_name_in_title(raw_name: str, title: str) -> bool:
+        """
+        Checks if raw_name matches in title while respecting State/St./Tech distinctions.
+        e.g. 'Oregon State' matches 'Oregon St.', but 'Oregon' does NOT match 'Oregon St.'.
+        """
+        if not raw_name or not title:
+            return False
+        clean = raw_name.strip()
+        has_state = bool(re.search(r"\b(state|st\.?)\b", clean, re.IGNORECASE))
+        has_tech = bool(re.search(r"\btech\b", clean, re.IGNORECASE))
+        base = re.sub(r"\b(state|st\.?|tech)\b", "", clean, flags=re.IGNORECASE).strip()
+
+        if has_state:
+            pattern = r"\b" + re.escape(base) + r"\s+(?:state|st\.?)\b"
+            return bool(re.search(pattern, title, re.IGNORECASE))
+        elif has_tech:
+            pattern = r"\b" + re.escape(base) + r"\s+tech\b"
+            return bool(re.search(pattern, title, re.IGNORECASE))
+        else:
+            # Must NOT be followed by state/st/tech
+            pattern = r"\b" + re.escape(base) + r"\b(?!\s+(?:state|st\.?|tech)\b)"
+            return bool(re.search(pattern, title, re.IGNORECASE))
+
+    @staticmethod
+    def is_team_matching_market(primary_team: str, primary_raw: str, m_suffix: str, m_title: str) -> bool:
+        """
+        Determines if a market's ticker suffix or title matches the targeted team.
+        Accurately distinguishes between State/St/Tech counterparts (e.g. ORST vs ORE).
+        """
+        # 1. Code match against ticker suffix (e.g. 'ORST' in 'ORST9' or 'ORST')
+        if primary_team:
+            prefix_match = re.match(r"^([A-Za-z]+)", m_suffix)
+            if prefix_match and prefix_match.group(1).upper() == primary_team.upper():
+                return True
+            if m_suffix.upper() == primary_team.upper():
+                return True
+
+        # 2. Text match in market title
+        if primary_raw:
+            raw_clean = primary_raw.strip()
+            has_state = bool(re.search(r"\b(state|st\.?)\b", raw_clean, re.IGNORECASE))
+            has_tech = bool(re.search(r"\btech\b", raw_clean, re.IGNORECASE))
+            
+            base_name = re.sub(r"\b(state|st\.?|tech)\b", "", raw_clean, flags=re.IGNORECASE).strip()
+            
+            if has_state:
+                pattern = r"\b" + re.escape(base_name) + r"\s+(?:state|st\.?)\b"
+                if re.search(pattern, m_title, re.IGNORECASE):
+                    return True
+            elif has_tech:
+                pattern = r"\b" + re.escape(base_name) + r"\s+tech\b"
+                if re.search(pattern, m_title, re.IGNORECASE):
+                    return True
+            else:
+                pattern = r"\b" + re.escape(base_name) + r"\b(?!\s+(?:state|st\.?|tech)\b)"
+                if re.search(pattern, m_title, re.IGNORECASE):
+                    return True
+
+        return False
 
     def extract_teams_from_play(self, play: str, sport: str) -> List[str]:
         """
@@ -508,15 +608,17 @@ class MarketMatcher:
             elif is_ml and ("TEAMTOTAL" in et or "TOTAL" in et or "SPREAD" in et):
                 score -= 100
 
-            # Dual team match bonus
+            # Team match bonus
             matched_teams = 0
             for idx_t in range(len(teams_extracted)):
                 t_raw = teams_extracted[idx_t] if idx_t < len(teams_extracted) else ""
                 t_norm = norm_teams[idx_t] if idx_t < len(norm_teams) else ""
-                if (t_norm and t_norm.upper() in et) or (t_raw and t_raw.lower() in title):
+                if (t_norm and t_norm.upper() in et) or (t_raw and self.is_team_name_in_title(t_raw, title)):
                     matched_teams += 1
             if len(teams_extracted) >= 2 and matched_teams >= 2:
                 score += 200
+            elif matched_teams >= 1:
+                score += 150
 
             return score
 
@@ -586,7 +688,7 @@ class MarketMatcher:
             teams_matched = False
             ticker_suffix = event_ticker.split("-")[-1].upper() if "-" in event_ticker else event_ticker.upper()
             for t_raw in teams_extracted:
-                if len(t_raw) >= 3 and (re.search(r"\b" + re.escape(t_raw) + r"\b", event_title, re.IGNORECASE) or re.search(r"\b" + re.escape(t_raw) + r"\b", sub_title, re.IGNORECASE)):
+                if len(t_raw) >= 3 and (self.is_team_name_in_title(t_raw, event_title) or self.is_team_name_in_title(t_raw, sub_title)):
                     teams_matched = True
                     break
             if not teams_matched:
@@ -672,11 +774,7 @@ class MarketMatcher:
                     m_ticker = mkt.get("ticker", "").upper()
                     m_suffix = m_ticker.split("-")[-1]
 
-                    team_match = False
-                    if primary_team and (m_suffix.startswith(primary_team.upper()) or primary_team.lower() in m_title):
-                        team_match = True
-                    elif primary_raw and (primary_raw.lower() in m_title or m_suffix.startswith(primary_raw.upper())):
-                        team_match = True
+                    team_match = self.is_team_matching_market(primary_team, primary_raw, m_suffix, m_title)
 
                     m_num_match = re.search(r"(?:over|under|total)\s*(\d+(?:\.\d+)?)", m_title, flags=re.IGNORECASE) or re.search(r"(\d+(?:\.\d+)?)\s*(?:runs?|goals?|points?)", m_title, flags=re.IGNORECASE) or re.search(r"\b(\d+(?:\.\d+)?)\b", m_title)
                     m_num = float(m_num_match.group(1)) if m_num_match else None
@@ -728,11 +826,7 @@ class MarketMatcher:
                         break
 
                     # If only primary team extracted (e.g. Pirates F5 +0.5), opponent is the OTHER non-tie market
-                    team_match = False
-                    if primary_team and (m_suffix == primary_team.upper() or primary_team.lower() in m_title):
-                        team_match = True
-                    elif primary_raw and (primary_raw.lower() in m_title or m_suffix == primary_raw.upper()):
-                        team_match = True
+                    team_match = self.is_team_matching_market(primary_team, primary_raw, m_suffix, m_title)
 
                     if not team_match:
                         best_market = mkt
@@ -750,11 +844,7 @@ class MarketMatcher:
                     if "tie" in m_title or m_suffix == "TIE":
                         continue
 
-                    team_match = False
-                    if primary_team and (m_suffix == primary_team.upper() or primary_team.lower() in m_title):
-                        team_match = True
-                    elif primary_raw and (primary_raw.lower() in m_title or m_suffix == primary_raw.upper()):
-                        team_match = True
+                    team_match = self.is_team_matching_market(primary_team, primary_raw, m_suffix, m_title)
 
                     if team_match:
                         best_market = mkt
@@ -799,11 +889,7 @@ class MarketMatcher:
                     m_ticker = mkt.get("ticker", "").upper()
                     m_suffix = mkt.get("ticker", "").split("-")[-1]
 
-                    team_match = False
-                    if primary_team and (m_suffix.startswith(primary_team.upper()) or primary_team.lower() in m_title):
-                        team_match = True
-                    elif primary_raw and (primary_raw.lower() in m_title or m_suffix.startswith(primary_raw.upper())):
-                        team_match = True
+                    team_match = self.is_team_matching_market(primary_team, primary_raw, m_suffix, m_title)
 
                     # Extract line number (e.g. 6.5, 31.5)
                     m_num_match = re.search(r"\b(\d+(?:\.\d+)?)\b", m_title) or re.search(r"(\d+(?:\.\d+)?)$", m_suffix)
