@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-13T06:34:33.826248+00:00",
+  "last_updated": "2026-09-13T12:18:27.175051+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1426,6 +1426,105 @@
       "count_fp": "0.86",
       "actual_risk_dollars": 0.4988,
       "order_id": "01a09979-84a8-733b-94bd-8eedfb5f7639",
+      "simulated": false
+    },
+    "6e51f68bbc2b1eee": {
+      "trade_id": "6e51f68bbc2b1eee",
+      "date_placed": "2026-09-13T12:18:22.406491+00:00",
+      "play": "Dallas ML & Detroit ML",
+      "sport": "NFL",
+      "market": "Parlay",
+      "sheet_odds": "100",
+      "units": 2.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY0-SHARD1-S202671231C6CFE1-9640082A608",
+      "kalshi_side": "yes",
+      "price_cents": 30,
+      "count_fp": "2.00",
+      "actual_risk_dollars": 1.0,
+      "order_id": "rfq_96657dea-860e-49c0-8539-852582cc5bb1_41efce9c-5581-43ed-9de7-d13e4eebb770",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Dallas ML",
+          "market_ticker": "KXNFLGAME-26SEP13DALNYG-NYG",
+          "event_ticker": "KXNFLGAME-26SEP13DALNYG",
+          "side": "yes",
+          "market_title": "Dallas vs New York G Pro Football game: New York G wins?"
+        },
+        {
+          "leg_description": "Detroit ML",
+          "market_ticker": "KXNFLGAME-26SEP13NODET-DET",
+          "event_ticker": "KXNFLGAME-26SEP13NODET",
+          "side": "yes",
+          "market_title": "New Orleans vs Detroit Pro Football game: Detroit wins?"
+        }
+      ],
+      "simulated": false
+    },
+    "d5addf63bcaf715f": {
+      "trade_id": "d5addf63bcaf715f",
+      "date_placed": "2026-09-13T12:18:24.727137+00:00",
+      "play": "Mets/Yankees U10.5 & Orioles/Blue Jays U9.5",
+      "sport": "MLB",
+      "market": "Parlay",
+      "sheet_odds": "-116",
+      "units": 1.5,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S20261B3B834C2DD-6A7543CA8CF",
+      "kalshi_side": "yes",
+      "price_cents": 53,
+      "count_fp": "1.39",
+      "actual_risk_dollars": 0.7506,
+      "order_id": "rfq_95624615-2cd5-4f6d-826b-0be5aab5cc11_ac1a419f-3da4-4e12-9eb4-a7e1e2c0fff0",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Mets/Yankees U10.5",
+          "market_ticker": "KXMLBTOTAL-26SEP131335NYMNYY-11",
+          "event_ticker": "KXMLBTOTAL-26SEP131335NYMNYY",
+          "side": "no",
+          "market_title": "Over 10.5 runs scored"
+        },
+        {
+          "leg_description": "Orioles/Blue Jays U9.5",
+          "market_ticker": "KXMLBTOTAL-26SEP131337BALTOR-10",
+          "event_ticker": "KXMLBTOTAL-26SEP131337BALTOR",
+          "side": "no",
+          "market_title": "Over 9.5 runs scored"
+        }
+      ],
+      "simulated": false
+    },
+    "52b65d148b2822e7": {
+      "trade_id": "52b65d148b2822e7",
+      "date_placed": "2026-09-13T12:18:26.858709+00:00",
+      "play": "Ravens ML & Eagles/Commanders U53.5",
+      "sport": "NFL",
+      "market": "Parlay",
+      "sheet_odds": "110",
+      "units": 2.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S202665A5B0E6DDA-E9ACD2FB64B",
+      "kalshi_side": "yes",
+      "price_cents": 31,
+      "count_fp": "2.08",
+      "actual_risk_dollars": 0.9984,
+      "order_id": "rfq_7b423a3f-8328-4a5c-b4fc-c196357e871e_47e70808-5cc9-4197-b003-0907df0dca42",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Ravens ML",
+          "market_ticker": "KXNFLGAME-26SEP13BALIND-IND",
+          "event_ticker": "KXNFLGAME-26SEP13BALIND",
+          "side": "yes",
+          "market_title": "Baltimore vs Indianapolis Pro Football game: Indianapolis wins?"
+        },
+        {
+          "leg_description": "Eagles/Commanders U53.5",
+          "market_ticker": "KXNFLTOTAL-26SEP13WASPHI-54",
+          "event_ticker": "KXNFLTOTAL-26SEP13WASPHI",
+          "side": "no",
+          "market_title": "Will there be over 53.5 points scored?"
+        }
+      ],
       "simulated": false
     }
   }
