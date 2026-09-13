@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-13T16:33:38.676895+00:00",
+  "last_updated": "2026-09-13T18:58:04.264715+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1525,6 +1525,22 @@
           "market_title": "Will there be over 53.5 points scored?"
         }
       ],
+      "simulated": false
+    },
+    "2c3cc1706a572600": {
+      "trade_id": "2c3cc1706a572600",
+      "date_placed": "2026-09-13T18:58:03.676580+00:00",
+      "play": "Padres ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-125",
+      "units": 2.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP131920SDSF-SD",
+      "kalshi_side": "yes",
+      "price_cents": 55,
+      "count_fp": "2.27",
+      "actual_risk_dollars": 1.2485,
+      "order_id": "01a09c22-3678-76a2-9b6e-08d2c45f6fa7",
       "simulated": false
     }
   }
