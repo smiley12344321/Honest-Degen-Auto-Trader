@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-14T18:52:50.960099+00:00",
+  "last_updated": "2026-09-14T22:16:49.787708+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1541,6 +1541,71 @@
       "count_fp": "2.27",
       "actual_risk_dollars": 1.2485,
       "order_id": "01a09c22-3678-76a2-9b6e-08d2c45f6fa7",
+      "simulated": false
+    },
+    "fcb5753bda5252a0": {
+      "trade_id": "fcb5753bda5252a0",
+      "date_placed": "2026-09-14T22:16:43.957177+00:00",
+      "play": "Chiefs -2.5",
+      "sport": "NFL",
+      "market": "Point Spread",
+      "sheet_odds": "-110",
+      "units": 1.0,
+      "kalshi_ticker": "KXNFLSPREAD-26SEP14DENKC-KC3",
+      "kalshi_side": "yes",
+      "price_cents": 49,
+      "count_fp": "1.02",
+      "actual_risk_dollars": 0.4998,
+      "order_id": "01a0a1fe-74f8-7056-b4b0-017a12b40c4e",
+      "simulated": false
+    },
+    "9634837157bef32a": {
+      "trade_id": "9634837157bef32a",
+      "date_placed": "2026-09-14T22:16:48.847966+00:00",
+      "play": "Dodgers ML & Mariners/Angels F5 U5.5",
+      "sport": "MLB",
+      "market": "Parlay",
+      "sheet_odds": "100",
+      "units": 2.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026989FAB535D1-55FEB4A2BE4",
+      "kalshi_side": "yes",
+      "price_cents": 48,
+      "count_fp": "2.00",
+      "actual_risk_dollars": 1.0,
+      "order_id": "rfq_ec608419-9c69-4d13-8801-a4ebe8629d29_0bea19c1-084a-4684-89b9-1fdb1f6fd974",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Dodgers ML",
+          "market_ticker": "KXMLBGAME-26SEP141840LADCIN-LAD",
+          "event_ticker": "KXMLBGAME-26SEP141840LADCIN",
+          "side": "yes",
+          "market_title": "Los Angeles D wins"
+        },
+        {
+          "leg_description": "Mariners/Angels F5 U5.5",
+          "market_ticker": "KXMLBF5TOTAL-26SEP142138SEALAA-6",
+          "event_ticker": "KXMLBF5TOTAL-26SEP142138SEALAA",
+          "side": "no",
+          "market_title": "First 5 innings: Over 5.5 runs"
+        }
+      ],
+      "simulated": false
+    },
+    "4c035dd5859a6203": {
+      "trade_id": "4c035dd5859a6203",
+      "date_placed": "2026-09-14T22:16:49.464864+00:00",
+      "play": "Tigers / Blue Jays NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-133",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26SEP141907DETTOR",
+      "kalshi_side": "no",
+      "price_cents": 57,
+      "count_fp": "1.32",
+      "actual_risk_dollars": 0.7524,
+      "order_id": "01a0a1fe-8c68-76c9-b8ea-d5d01a9b2efc",
       "simulated": false
     }
   }
