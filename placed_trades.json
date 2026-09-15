@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-15T15:34:53.367502+00:00",
+  "last_updated": "2026-09-15T19:13:38.990435+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1622,6 +1622,39 @@
       "count_fp": "1.47",
       "actual_risk_dollars": 0.7497,
       "order_id": "01a0a4c4-9208-765c-90bc-7682642df791",
+      "simulated": false
+    },
+    "497c55c216c3eb14": {
+      "trade_id": "497c55c216c3eb14",
+      "date_placed": "2026-09-15T19:13:38.511060+00:00",
+      "play": "Rangers TT O2.5 & Dodgers TT O3.5",
+      "sport": "MLB",
+      "market": "Team Total Parlay",
+      "sheet_odds": "104",
+      "units": 2.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S20260DFBB53C553-921C687F9BD",
+      "kalshi_side": "yes",
+      "price_cents": 9,
+      "count_fp": "2.04",
+      "actual_risk_dollars": 0.9996,
+      "order_id": "rfq_36cf7bee-2ca5-48d4-b3cd-52c09b56a1dc_8e0a7c83-130f-4cca-89c2-d600bcb5bba4",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Rangers TT O2.5",
+          "market_ticker": "KXMLBSPREAD-26SEP152005BOSTEX-TEX3",
+          "event_ticker": "KXMLBSPREAD-26SEP152005BOSTEX",
+          "side": "yes",
+          "market_title": "Texas wins by over 2.5 runs?"
+        },
+        {
+          "leg_description": "Dodgers TT O3.5",
+          "market_ticker": "KXMLBSPREAD-26SEP151840LADCIN-LAD4",
+          "event_ticker": "KXMLBSPREAD-26SEP151840LADCIN",
+          "side": "yes",
+          "market_title": "Los Angeles D wins by over 3.5 runs?"
+        }
+      ],
       "simulated": false
     }
   }
