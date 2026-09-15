@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-15T05:53:29.535911+00:00",
+  "last_updated": "2026-09-15T11:12:21.972681+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1606,6 +1606,22 @@
       "count_fp": "1.32",
       "actual_risk_dollars": 0.7524,
       "order_id": "01a0a1fe-8c68-76c9-b8ea-d5d01a9b2efc",
+      "simulated": false
+    },
+    "d5676a8f72a892cd": {
+      "trade_id": "d5676a8f72a892cd",
+      "date_placed": "2026-09-15T11:12:21.685934+00:00",
+      "play": "Rayo Vallecano / Espanyol Over 2.5",
+      "sport": "Soccer",
+      "market": "Total Goals",
+      "sheet_odds": "-101",
+      "units": 1.5,
+      "kalshi_ticker": "KXLALIGATOTAL-26SEP15RVCESP-3",
+      "kalshi_side": "yes",
+      "price_cents": 51,
+      "count_fp": "1.47",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a0a4c4-9208-765c-90bc-7682642df791",
       "simulated": false
     }
   }
