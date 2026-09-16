@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-16T10:11:48.185183+00:00",
+  "last_updated": "2026-09-16T14:59:49.573403+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1653,6 +1653,39 @@
           "event_ticker": "KXMLBSPREAD-26SEP151840LADCIN",
           "side": "yes",
           "market_title": "Los Angeles D wins by over 3.5 runs?"
+        }
+      ],
+      "simulated": false
+    },
+    "ee56fd67e996f632": {
+      "trade_id": "ee56fd67e996f632",
+      "date_placed": "2026-09-16T14:59:49.091209+00:00",
+      "play": "Dodgers ML & Rays ML",
+      "sport": "MLB",
+      "market": "Parlay",
+      "sheet_odds": "130",
+      "units": 1.0,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-SHARD1-S202662FB1046495-9BD5702D841",
+      "kalshi_side": "yes",
+      "price_cents": 42,
+      "count_fp": "1.16",
+      "actual_risk_dollars": 0.4988,
+      "order_id": "01a0aabb-2e88-795a-8600-a8e0bd7fdc30",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Dodgers ML",
+          "market_ticker": "KXMLBGAME-26SEP161840LADCIN-LAD",
+          "event_ticker": "KXMLBGAME-26SEP161840LADCIN",
+          "side": "yes",
+          "market_title": "Los Angeles D wins"
+        },
+        {
+          "leg_description": "Rays ML",
+          "market_ticker": "KXMLBGAME-26SEP161840ATHTB-TB",
+          "event_ticker": "KXMLBGAME-26SEP161840ATHTB",
+          "side": "yes",
+          "market_title": "Tampa Bay wins"
         }
       ],
       "simulated": false
