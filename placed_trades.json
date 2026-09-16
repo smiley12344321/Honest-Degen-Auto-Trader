@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-16T14:59:49.573403+00:00",
+  "last_updated": "2026-09-16T18:49:40.096626+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1688,6 +1688,22 @@
           "market_title": "Tampa Bay wins"
         }
       ],
+      "simulated": false
+    },
+    "5ef52f3ba70ee030": {
+      "trade_id": "5ef52f3ba70ee030",
+      "date_placed": "2026-09-16T18:49:36.508624+00:00",
+      "play": "Diamondbacks ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-132",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP162140MIAAZ-AZ",
+      "kalshi_side": "yes",
+      "price_cents": 56,
+      "count_fp": "1.34",
+      "actual_risk_dollars": 0.7504,
+      "order_id": "01a0ab8d-8e00-789a-bf07-fdd8badd8c58",
       "simulated": false
     }
   }
