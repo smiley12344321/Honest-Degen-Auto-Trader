@@ -615,5 +615,172 @@ class TestMarketMatcher:
         assert r_mich.ticker == "KXNCAAFSPREAD-26SEP12MICHTEX-MICH7"
         assert r_mich.side == "yes"
 
+    def test_player_props_matching(self, matcher):
+        mock_events = [
+            {
+                "event_ticker": "KXNFLPASSYDS-26SEP17DETBUF",
+                "title": "Detroit vs Buffalo: Passing Yards",
+                "markets": [
+                    {"ticker": "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-175", "title": "Josh Allen: 175+ passing yards"},
+                    {"ticker": "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-200", "title": "Josh Allen: 200+ passing yards"},
+                    {"ticker": "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-225", "title": "Josh Allen: 225+ passing yards"},
+                    {"ticker": "KXNFLPASSYDS-26SEP17DETBUF-DETJGOFF16-250", "title": "Jared Goff: 250+ passing yards"}
+                ]
+            },
+            {
+                "event_ticker": "KXNFLRSHYDS-26SEP20CARATL",
+                "title": "Carolina vs Atlanta: Rushing Yards",
+                "markets": [
+                    {"ticker": "KXNFLRSHYDS-26SEP20CARATL-ATLBROBINSON7-50", "title": "Bijan Robinson: 50+ rushing yards"},
+                    {"ticker": "KXNFLRSHYDS-26SEP20CARATL-ATLBROBINSON7-60", "title": "Bijan Robinson: 60+ rushing yards"}
+                ]
+            },
+            {
+                "event_ticker": "KXNFLTD-26SEP20CARATL",
+                "title": "Carolina vs Atlanta: Touchdowns",
+                "markets": [
+                    {"ticker": "KXNFLTD-26SEP20CARATL-ATLDLONDON5-1", "title": "Drake London: 1+ touchdowns"},
+                    {"ticker": "KXNFLTD-26SEP20CARATL-ATLDLONDON5-2", "title": "Drake London: 2+ touchdowns"}
+                ]
+            },
+            {
+                "event_ticker": "KXMLBKS-26SEP181840CHCCIN",
+                "title": "Chicago C vs Cincinnati: Strikeouts",
+                "markets": [
+                    {"ticker": "KXMLBKS-26SEP181840CHCCIN-CINCBURNS26-2", "title": "Chase Burns: 2+ strikeouts?"},
+                    {"ticker": "KXMLBKS-26SEP181840CHCCIN-CINCBURNS26-3", "title": "Chase Burns: 3+ strikeouts?"}
+                ]
+            }
+        ]
+
+        # 1. J. Allen 200+ Pass Yds (exact match from yesterday's failed trade)
+        p1 = PickRecord(
+            day="1", date="9/17/2026", sport="NFL", play="J. Allen 200+ Pass Yds",
+            market="Player Prop", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="jallen_200"
+        )
+        r1 = matcher.match_pick(p1, live_events=mock_events)
+        assert r1.matched is True
+        assert r1.event_ticker == "KXNFLPASSYDS-26SEP17DETBUF"
+        assert r1.ticker == "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-200"
+        assert r1.side == "yes"
+
+        # 2. Josh Allen Over 199.5 Passing Yards (sportsbook alternate line converts to 200+)
+        p2 = PickRecord(
+            day="1", date="9/17/2026", sport="NFL", play="Josh Allen Over 199.5 Passing Yards",
+            market="Passing Yards", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="jallen_over_199"
+        )
+        r2 = matcher.match_pick(p2, live_events=mock_events)
+        assert r2.matched is True
+        assert r2.ticker == "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-200"
+        assert r2.side == "yes"
+
+        # 3. Jared Goff Under 249.5 Pass Yds -> NO on 250+
+        p3 = PickRecord(
+            day="1", date="9/17/2026", sport="NFL", play="Jared Goff Under 249.5 Pass Yds",
+            market="Player Prop", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="goff_under_250"
+        )
+        r3 = matcher.match_pick(p3, live_events=mock_events)
+        assert r3.matched is True
+        assert r3.ticker == "KXNFLPASSYDS-26SEP17DETBUF-DETJGOFF16-250"
+        assert r3.side == "no"
+
+        # 4. Bijan Robinson 50+ Rush Yds
+        p4 = PickRecord(
+            day="1", date="9/20/2026", sport="NFL", play="Bijan Robinson 50+ Rush Yds",
+            market="Player Prop", odds_raw="-110", odds_numeric=-110.0,
+            implied_cents=52, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="bijan_rush"
+        )
+        r4 = matcher.match_pick(p4, live_events=mock_events)
+        assert r4.matched is True
+        assert r4.ticker == "KXNFLRSHYDS-26SEP20CARATL-ATLBROBINSON7-50"
+        assert r4.side == "yes"
+
+        # 5. Drake London 1+ TD (Anytime Touchdown)
+        p5 = PickRecord(
+            day="1", date="9/20/2026", sport="NFL", play="Drake London Anytime TD",
+            market="Player Prop", odds_raw="+140", odds_numeric=140.0,
+            implied_cents=41, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="london_td"
+        )
+        r5 = matcher.match_pick(p5, live_events=mock_events)
+        assert r5.matched is True
+        assert r5.ticker == "KXNFLTD-26SEP20CARATL-ATLDLONDON5-1"
+        assert r5.side == "yes"
+
+        # 6. Chase Burns 2+ Ks (MLB Strikeouts)
+        p6 = PickRecord(
+            day="1", date="9/18/2026", sport="MLB", play="Chase Burns 2+ Strikeouts",
+            market="Player Prop", odds_raw="-130", odds_numeric=-130.0,
+            implied_cents=56, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="burns_ks"
+        )
+        r6 = matcher.match_pick(p6, live_events=mock_events)
+        assert r6.matched is True
+        assert r6.ticker == "KXMLBKS-26SEP181840CHCCIN-CINCBURNS26-2"
+        assert r6.side == "yes"
+
+        # 7. Disqualification of mismatched player (Kyle Allen vs Josh Allen)
+        p7 = PickRecord(
+            day="1", date="9/17/2026", sport="NFL", play="Kyle Allen 200+ Pass Yds",
+            market="Player Prop", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="kyle_allen"
+        )
+        r7 = matcher.match_pick(p7, live_events=mock_events)
+        assert r7.matched is False
+
+        # 8. Disqualification of mismatched date
+        p8 = PickRecord(
+            day="1", date="9/18/2026", sport="NFL", play="J. Allen 200+ Pass Yds",
+            market="Player Prop", odds_raw="-115", odds_numeric=-115.0,
+            implied_cents=53, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="jallen_wrong_date"
+        )
+        r8 = matcher.match_pick(p8, live_events=mock_events)
+        assert r8.matched is False
+
+    def test_parlay_with_player_prop(self, matcher):
+        mock_events = [
+            {
+                "event_ticker": "KXNFLGAME-26SEP17DETBUF",
+                "title": "Detroit at Buffalo",
+                "markets": [
+                    {"ticker": "KXNFLGAME-26SEP17DETBUF-BUF", "title": "Buffalo Bills to win"},
+                    {"ticker": "KXNFLGAME-26SEP17DETBUF-DET", "title": "Detroit Lions to win"}
+                ]
+            },
+            {
+                "event_ticker": "KXNFLPASSYDS-26SEP17DETBUF",
+                "title": "Detroit vs Buffalo: Passing Yards",
+                "markets": [
+                    {"ticker": "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-200", "title": "Josh Allen: 200+ passing yards"}
+                ]
+            }
+        ]
+
+        # Multi-leg SGP/Parlay: Bills ML + J. Allen 200+ Pass Yds
+        p_parlay = PickRecord(
+            day="1", date="9/17/2026", sport="NFL", play="Bills ML + J. Allen 200+ Pass Yds",
+            market="Parlay", odds_raw="+140", odds_numeric=140.0,
+            implied_cents=41, grade="A", units=1.0, risk_dollars_sheet=None,
+            result="pending", notes="", trade_id="bills_allen_sgp"
+        )
+        r_parlay = matcher.match_pick(p_parlay, live_events=mock_events)
+        assert r_parlay.matched is True
+        assert r_parlay.is_combo is True
+        assert len(r_parlay.combo_legs) == 2
+        assert r_parlay.combo_legs[0]["market_ticker"] == "KXNFLGAME-26SEP17DETBUF-BUF"
+        assert r_parlay.combo_legs[0]["side"] == "yes"
+        assert r_parlay.combo_legs[1]["market_ticker"] == "KXNFLPASSYDS-26SEP17DETBUF-BUFJALLEN17-200"
+        assert r_parlay.combo_legs[1]["side"] == "yes"
+
+
 
 

@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -279,6 +280,324 @@ class MarketMatcher:
         teams = [p.strip() for p in parts if p.strip()]
         return teams
 
+    def is_player_prop_play(self, play: str, market: str = "") -> bool:
+        combined = f"{play} {market}".lower()
+        prop_keywords = [
+            r"\bpass(?:ing)?\s*yds?\b", r"\bpass(?:ing)?\s*yards?\b", r"\bpyards?\b",
+            r"\brush(?:ing)?\s*yds?\b", r"\brush(?:ing)?\s*yards?\b", r"\bryards?\b",
+            r"\brec(?:eiving)?\s*yds?\b", r"\brec(?:eiving)?\s*yards?\b", r"\breception\s*yards?\b",
+            r"\bpass(?:ing)?\s*tds?\b", r"\bpass(?:ing)?\s*touchdowns?\b",
+            r"\banytime\s*td\b", r"\banytime\s*touchdown\b", r"\batd\b", r"\btd\s*scorer\b",
+            r"\bpass\s*comp(?:letions)?\b", r"\bcompletions\b",
+            r"\bpass\s*att(?:empts)?\b",
+            r"\bpass\s*int(?:erceptions)?\b",
+            r"\brush\s*att(?:empts)?\b", r"\bcarries\b",
+            r"\breceptions\b",
+            r"\b\d+\+\s*tds?\b",
+            r"\bstrikeouts?\b", r"\bks\b", r"\bk's\b",
+            r"\bhits?\b", r"\bhome\s*runs?\b", r"\bhrs?\b",
+            r"\brbis?\b", r"\btotal\s*bases\b",
+            r"\bpoints?\b", r"\bpts\b", r"\brebounds?\b", r"\breb\b", r"\bassists?\b", r"\bast\b",
+            r"\b3pt\b", r"\bthrees\b", r"\b3-pointers?\b", r"\bpra\b"
+        ]
+        return any(re.search(pat, combined) for pat in prop_keywords)
+
+    def normalize_player_name(self, s: str) -> str:
+        s = s.lower()
+        s = re.sub(r"[.'\"]", "", s)
+        tokens = s.split()
+        tokens = [t for t in tokens if t not in ["jr", "sr", "ii", "iii", "iv", "v"]]
+        return " ".join(tokens).strip()
+
+    def is_player_match(self, pick_player: str, kalshi_market_title: str, kalshi_market_ticker: str = "") -> bool:
+        title_parts = kalshi_market_title.split(":")
+        kalshi_player_name = title_parts[0].strip() if len(title_parts) > 1 else kalshi_market_title.strip()
+        
+        p_norm = self.normalize_player_name(pick_player)
+        k_norm = self.normalize_player_name(kalshi_player_name)
+        
+        if p_norm == k_norm:
+            return True
+            
+        p_tokens = p_norm.split()
+        k_tokens = k_norm.split()
+        
+        if not p_tokens or not k_tokens:
+            return False
+            
+        p_last = p_tokens[-1]
+        k_last = k_tokens[-1]
+        
+        if len(p_tokens) >= 2 and p_tokens[-2] in ["st", "van", "de", "la", "von"]:
+            p_last = f"{p_tokens[-2]} {p_tokens[-1]}"
+        if len(k_tokens) >= 2 and k_tokens[-2] in ["st", "van", "de", "la", "von"]:
+            k_last = f"{k_tokens[-2]} {k_tokens[-1]}"
+            
+        if p_last == k_last:
+            p_first = p_tokens[0]
+            k_first = k_tokens[0]
+            
+            if len(p_tokens) == 1:
+                return True
+                
+            if len(p_first) == 1 and k_first.startswith(p_first):
+                return True
+                
+            p_first_all = "".join([t for t in p_tokens if t != p_last])
+            k_first_all = "".join([t for t in k_tokens if t != k_last])
+            if p_first_all == k_first_all:
+                return True
+            if len(p_first_all) == 2 and k_first_all.startswith(p_first_all):
+                return True
+            if p_first == k_first:
+                return True
+                
+        if kalshi_market_ticker:
+            parts = kalshi_market_ticker.split("-")
+            mkt_suffix = parts[-2].upper() if len(parts) >= 2 else ""
+            clean_p_last = re.sub(r"\s+", "", p_last).upper()
+            if clean_p_last in mkt_suffix:
+                if len(p_tokens) > 1 and len(p_tokens[0]) >= 1:
+                    init = p_tokens[0][0].upper()
+                    if f"{init}{clean_p_last}" in mkt_suffix:
+                        return True
+                else:
+                    return True
+
+        return False
+
+    def extract_prop_info(self, play: str, market: str = "") -> Dict[str, Any]:
+        combined = f"{play} {market}".strip()
+        play_clean = play.strip()
+        
+        # 1. Detect Stat Type
+        stat_type = None
+        if re.search(r"\b(?:pass(?:ing)?\s*yds?|pass(?:ing)?\s*yards?|pyards?)\b", combined, re.I):
+            stat_type = "PASS_YDS"
+        elif re.search(r"\b(?:rush(?:ing)?\s*yds?|rush(?:ing)?\s*yards?|ryards?)\b", combined, re.I):
+            stat_type = "RUSH_YDS"
+        elif re.search(r"\b(?:rec(?:eiving)?\s*yds?|rec(?:eiving)?\s*yards?|reception\s*yards?)\b", combined, re.I):
+            stat_type = "REC_YDS"
+        elif re.search(r"\b(?:pass(?:ing)?\s*tds?|pass(?:ing)?\s*touchdowns?)\b", combined, re.I):
+            stat_type = "PASS_TDS"
+        elif re.search(r"\b(?:anytime\s*td|anytime\s*touchdown|atd|touchdowns?|td\s*scorer|\d+\+\s*tds?)\b", combined, re.I):
+            stat_type = "TD"
+        elif re.search(r"\b(?:pass\s*comp(?:letions)?|completions)\b", combined, re.I):
+            stat_type = "PASS_COMP"
+        elif re.search(r"\b(?:pass\s*att(?:empts)?)\b", combined, re.I):
+            stat_type = "PASS_ATT"
+        elif re.search(r"\b(?:pass\s*int(?:erceptions)?|interceptions?)\b", combined, re.I):
+            stat_type = "PASS_INT"
+        elif re.search(r"\b(?:receptions)\b", combined, re.I):
+            stat_type = "REC"
+        elif re.search(r"\b(?:rush\s*att(?:empts)?|carries)\b", combined, re.I):
+            stat_type = "RUSH_ATT"
+        elif re.search(r"\b(?:rush\s*(?:\+|and)\s*rec(?:eiving)?\s*yds?)\b", combined, re.I):
+            stat_type = "RR_YDS"
+        elif re.search(r"\b(?:strikeouts?|ks?|k's)\b", combined, re.I):
+            stat_type = "K"
+        elif re.search(r"\b(?:hits?)\b", combined, re.I):
+            stat_type = "HIT"
+        elif re.search(r"\b(?:home\s*runs?|hrs?)\b", combined, re.I):
+            stat_type = "HR"
+        elif re.search(r"\b(?:points?|pts?)\b", combined, re.I):
+            stat_type = "PTS"
+        elif re.search(r"\b(?:rebounds?|reb?)\b", combined, re.I):
+            stat_type = "REB"
+        elif re.search(r"\b(?:assists?|ast?)\b", combined, re.I):
+            stat_type = "AST"
+        elif re.search(r"\b(?:3pt|threes?|3-pointers?)\b", combined, re.I):
+            stat_type = "3PT"
+
+        # 2. Extract Line & Direction
+        line = None
+        direction = "over"
+        
+        plus_match = re.search(r"(\d+(?:\.\d+)?)\s*\+", play_clean)
+        over_match = re.search(r"\b(?:over|o)\s*(\d+(?:\.\d+)?)", play_clean, re.I)
+        under_match = re.search(r"\b(?:under|u)\s*(\d+(?:\.\d+)?)", play_clean, re.I)
+        
+        if plus_match:
+            line = float(plus_match.group(1))
+            direction = "over"
+        elif over_match:
+            val = float(over_match.group(1))
+            line = math.floor(val) + 1.0 if val % 1 == 0.5 else val
+            direction = "over"
+        elif under_match:
+            val = float(under_match.group(1))
+            line = math.floor(val) + 1.0 if val % 1 == 0.5 else val
+            direction = "under"
+        elif stat_type == "TD":
+            line = 1.0
+            direction = "over"
+
+        # 3. Extract Player Name
+        p_name = play_clean
+        removals = [
+            r"\b(?:pass(?:ing)?\s*yds?|pass(?:ing)?\s*yards?|pyards?)\b",
+            r"\b(?:rush(?:ing)?\s*yds?|rush(?:ing)?\s*yards?|ryards?)\b",
+            r"\b(?:rec(?:eiving)?\s*yds?|rec(?:eiving)?\s*yards?|reception\s*yards?)\b",
+            r"\b(?:pass(?:ing)?\s*tds?|pass(?:ing)?\s*touchdowns?)\b",
+            r"\b(?:anytime\s*td|anytime\s*touchdown|atd|touchdown|td\s*scorer|tds?)\b",
+            r"\b(?:pass\s*comp(?:letions)?|completions)\b",
+            r"\b(?:pass\s*att(?:empts)?|attempts?)\b",
+            r"\b(?:pass\s*int(?:erceptions)?|interceptions?)\b",
+            r"\b(?:rush\s*att(?:empts)?|carries)\b",
+            r"\b(?:receptions?)\b",
+            r"\b(?:strikeouts?|ks?|k's)\b",
+            r"\b(?:hits?|home\s*runs?|hrs?|points?|pts?|rebounds?|reb?|assists?|ast?|3pt|threes?|3-pointers?)\b",
+            r"\b(?:over|under|o|u)\b",
+            r"\d+(?:\.\d+)?\s*\+?",
+            r"[+\-]"
+        ]
+        for rem in removals:
+            p_name = re.sub(rem, "", p_name, flags=re.I)
+        p_name = re.sub(r"\s+", " ", p_name).strip()
+        
+        return {
+            "player": p_name,
+            "stat": stat_type,
+            "line": line,
+            "direction": direction
+        }
+
+    def _match_player_prop(self, pick: PickRecord, live_events: List[Dict[str, Any]]) -> MatchResult:
+        prop_info = self.extract_prop_info(pick.play, pick.market)
+        target_player = prop_info["player"]
+        stat_type = prop_info["stat"]
+        target_line = prop_info["line"]
+        direction = prop_info["direction"]
+        sport = pick.sport.upper()
+
+        target_date = self.parse_pick_date(pick.date)
+        date_code = target_date.strftime("%y%b%d").upper() if target_date else ""
+
+        prop_series_map = {
+            "NFL": {
+                "PASS_YDS": ["KXNFLPASSYDS"],
+                "RUSH_YDS": ["KXNFLRSHYDS"],
+                "REC_YDS": ["KXNFLRECYDS"],
+                "TD": ["KXNFLTD", "KXNFLANYTD", "KXNFL2TD"],
+                "PASS_TDS": ["KXNFLPASSTDS"],
+                "PASS_COMP": ["KXNFLPASSCOMP"],
+                "PASS_ATT": ["KXNFLPASSATT"],
+                "PASS_INT": ["KXNFLPASSINT"],
+                "REC": ["KXNFLREC"],
+                "RUSH_ATT": ["KXNFLRSHATT"],
+                "RR_YDS": ["KXNFLRRYDS"],
+            },
+            "MLB": {
+                "K": ["KXMLBKS"],
+                "HIT": ["KXMLBHIT"],
+                "HR": ["KXMLBHR"],
+                "RBI": ["KXMLBRBI"],
+                "TB": ["KXMLBTB"],
+            },
+            "NBA": {
+                "PTS": ["KXNBAPTS"],
+                "REB": ["KXNBAREB"],
+                "AST": ["KXNBAAST"],
+                "3PT": ["KXNBA3PT"],
+            },
+            "WNBA": {
+                "PTS": ["KXWNBAPTS"],
+                "REB": ["KXWNBAREB"],
+                "AST": ["KXWNBAAST"],
+                "3PT": ["KXWNBA3PT"],
+            }
+        }
+        relevant_series = prop_series_map.get(sport, {}).get(stat_type, [])
+
+        stat_title_keywords = {
+            "PASS_YDS": ["passing yards", "pass yds"],
+            "RUSH_YDS": ["rushing yards", "rush yds"],
+            "REC_YDS": ["receiving yards", "rec yds"],
+            "TD": ["touchdown", "td"],
+            "PASS_TDS": ["passing touchdown", "pass td"],
+            "PASS_COMP": ["passing completion", "pass comp"],
+            "PASS_ATT": ["passing attempt", "pass att"],
+            "PASS_INT": ["passing interception", "pass int"],
+            "REC": ["reception"],
+            "RUSH_ATT": ["rushing attempt"],
+            "RR_YDS": ["rush and receiving"],
+            "K": ["strikeout"],
+            "HIT": ["hit"],
+            "HR": ["home run"],
+            "PTS": ["point"],
+            "REB": ["rebound"],
+            "AST": ["assist"],
+            "3PT": ["three"]
+        }
+        title_keywords = stat_title_keywords.get(stat_type, [])
+
+        def filter_and_match(events: List[Dict[str, Any]]) -> Optional[MatchResult]:
+            for ev in events:
+                et = ev.get("event_ticker", "").upper()
+                ev_title = ev.get("title", "").lower()
+                
+                # Check date
+                ev_date = self.extract_event_date(ev)
+                if target_date and ev_date:
+                    if not self.is_event_date_matching(ev_date, target_date):
+                        continue
+                elif date_code and date_code not in et:
+                    continue
+
+                # Check series / stat match
+                series_matched = any(s in et for s in relevant_series) if relevant_series else False
+                title_matched = any(k in ev_title for k in title_keywords) if title_keywords else False
+                if not series_matched and not title_matched:
+                    continue
+
+                markets = ev.get("markets", [])
+                for mkt in markets:
+                    m_title = mkt.get("title", "")
+                    m_ticker = mkt.get("ticker", "")
+                    if self.is_player_match(target_player, m_title, m_ticker):
+                        # Extract line
+                        m_line_match = re.search(r"(\d+(?:\.\d+)?)\s*\+", m_title) or re.search(r"-(\d+)$", m_ticker)
+                        m_line = float(m_line_match.group(1)) if m_line_match else None
+                        
+                        if target_line is not None and m_line is not None:
+                            if abs(m_line - target_line) > 0.1:
+                                continue
+                                
+                        side = "yes" if direction == "over" else "no"
+                        return MatchResult(
+                            matched=True,
+                            ticker=mkt["ticker"],
+                            event_ticker=ev["event_ticker"],
+                            side=side,
+                            market_title=mkt.get("title")
+                        )
+            return None
+
+        # 1. Search in live_events
+        res = filter_and_match(live_events)
+        if res:
+            return res
+
+        # 2. Targeted API fallback if client is available
+        if self.client and relevant_series:
+            fallback_events = []
+            for s in relevant_series:
+                try:
+                    evs = self.client.get_events(series_ticker=s, status="open", with_nested_markets=True)
+                    if evs:
+                        fallback_events.extend(evs)
+                except Exception:
+                    pass
+            if fallback_events:
+                res = filter_and_match(fallback_events)
+                if res:
+                    return res
+
+        return MatchResult(
+            matched=False,
+            reason=f"No active Kalshi market found matching player prop '{pick.play}' ({pick.sport} - {stat_type or 'Prop'}) on {pick.date}."
+        )
+
     def extract_parlay_legs(self, play: str, notes: str = "") -> List[str]:
         """
         Extracts individual legs from a parlay play description or notes.
@@ -354,6 +673,8 @@ class MarketMatcher:
                     sub_market = "BTTS"
                 elif "team total" in leg_lower or " tt" in leg_lower or "tt " in leg_lower or "(tt)" in leg_lower:
                     sub_market = "Team Total"
+                elif self.is_player_prop_play(leg_str):
+                    sub_market = "Player Prop"
                 elif "1h" in leg_lower or "first half" in leg_lower:
                     if "total" in leg_lower or "over" in leg_lower or "under" in leg_lower or re.search(r"[ou]\s*\d", leg_lower):
                         sub_market = "First Half Total"
@@ -407,15 +728,15 @@ class MarketMatcher:
                 if not leg_res.matched and self.client:
                     # Targeted sport series fallback for this leg
                     sport_series_map = {
-                        "MLB": ["KXMLBSPREAD", "KXMLBGAME", "KXMLBTOTAL", "KXMLBTEAMTOTAL", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
+                        "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBGAME", "KXMLBTOTAL", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLBKS", "KXMLBHIT", "KXMLBHR", "KXMLB"],
                         "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                         "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
                         "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
-                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL"],
+                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL", "KXNFLPASSYDS", "KXNFLRSHYDS", "KXNFLRECYDS", "KXNFLTD", "KXNFLANYTD", "KXNFLPASSTDS", "KXNFLPASSCOMP", "KXNFLREC"],
                         "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
                         "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
-                        "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
-                        "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD"],
+                        "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD", "KXWNBAPTS"],
+                        "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD", "KXNBAPTS"],
                         "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
                     }
                     candidate_series = sport_series_map.get(pick.sport.upper(), [])
@@ -458,15 +779,15 @@ class MarketMatcher:
         # If not matched in bulk events, execute targeted sport series fallback
         if self.client:
             sport_series_map = {
-                "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLB"],
+                "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLBKS", "KXMLBHIT", "KXMLBHR", "KXMLB"],
                 "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
                 "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
                 "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
-                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL"],
+                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL", "KXNFLPASSYDS", "KXNFLRSHYDS", "KXNFLRECYDS", "KXNFLTD", "KXNFLANYTD", "KXNFLPASSTDS", "KXNFLPASSCOMP", "KXNFLREC"],
                 "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
                 "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
-                "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD"],
-                "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD"],
+                "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD", "KXWNBAPTS"],
+                "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD", "KXNBAPTS"],
                 "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
             }
             candidate_series = sport_series_map.get(pick.sport.upper(), [])
@@ -489,6 +810,19 @@ class MarketMatcher:
         play_lower = pick.play.lower()
         market_lower = pick.market.lower()
         sport_upper = pick.sport.upper()
+
+        # Handle Player Props immediately
+        is_player_prop = (
+            "prop" in market_lower
+            or "passing" in market_lower
+            or "rushing" in market_lower
+            or "receiving" in market_lower
+            or "touchdown" in market_lower
+            or "strikeout" in market_lower
+            or self.is_player_prop_play(pick.play, pick.market)
+        )
+        if is_player_prop:
+            return self._match_player_prop(pick, live_events)
 
         teams_extracted = self.extract_teams_from_play(pick.play, pick.sport)
         norm_teams = [self.normalize_team(pick.sport, t) for t in teams_extracted]
