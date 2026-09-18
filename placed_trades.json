@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-18T13:07:29.586151+00:00",
+  "last_updated": "2026-09-18T17:05:05.658933+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1737,6 +1737,22 @@
           "market_title": "KT Wiz wins"
         }
       ],
+      "simulated": false
+    },
+    "a9a543af414827e5": {
+      "trade_id": "a9a543af414827e5",
+      "date_placed": "2026-09-18T17:05:05.237941+00:00",
+      "play": "Royals / Pirates NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-115",
+      "units": 2.0,
+      "kalshi_ticker": "KXMLBRFI-26SEP181840KCPIT",
+      "kalshi_side": "no",
+      "price_cents": 53,
+      "count_fp": "1.89",
+      "actual_risk_dollars": 1.0017,
+      "order_id": "01a0b57a-95e8-7b99-98e8-e2da9fa70025",
       "simulated": false
     }
   }
