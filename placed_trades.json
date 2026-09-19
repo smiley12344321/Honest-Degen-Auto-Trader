@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-18T23:54:17.135930+00:00",
+  "last_updated": "2026-09-19T03:23:04.039103+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1753,6 +1753,22 @@
       "count_fp": "1.89",
       "actual_risk_dollars": 1.0017,
       "order_id": "01a0b57a-95e8-7b99-98e8-e2da9fa70025",
+      "simulated": false
+    },
+    "116a990a6e70598a": {
+      "trade_id": "116a990a6e70598a",
+      "date_placed": "2026-09-19T03:23:03.672199+00:00",
+      "play": "Diamondbacks ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "100",
+      "units": 1.0,
+      "kalshi_ticker": "KXMLBGAME-26SEP182140NYYAZ-AZ",
+      "kalshi_side": "yes",
+      "price_cents": 5,
+      "count_fp": "10.00",
+      "actual_risk_dollars": 0.5,
+      "order_id": "01a0b7b0-59d8-78dc-9154-c072a500362e",
       "simulated": false
     }
   }
