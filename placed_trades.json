@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-19T08:13:58.805364+00:00",
+  "last_updated": "2026-09-19T12:32:32.728219+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1769,6 +1769,54 @@
       "count_fp": "10.00",
       "actual_risk_dollars": 0.5,
       "order_id": "01a0b7b0-59d8-78dc-9154-c072a500362e",
+      "simulated": false
+    },
+    "dc181dda08912197": {
+      "trade_id": "dc181dda08912197",
+      "date_placed": "2026-09-19T12:32:30.903464+00:00",
+      "play": "Nottingham Forest ML",
+      "sport": "Soccer",
+      "market": "Moneyline",
+      "sheet_odds": "-160",
+      "units": 1.5,
+      "kalshi_ticker": "KXEPLGAME-26SEP19NFOCOV-NFO",
+      "kalshi_side": "yes",
+      "price_cents": 60,
+      "count_fp": "1.25",
+      "actual_risk_dollars": 0.75,
+      "order_id": "01a0b9a7-6330-7f36-bc6b-c75b6f2357c2",
+      "simulated": false
+    },
+    "e2703c514ace3c0f": {
+      "trade_id": "e2703c514ace3c0f",
+      "date_placed": "2026-09-19T12:32:31.424103+00:00",
+      "play": "Yankees ML",
+      "sport": "MLB",
+      "market": "Moneyline",
+      "sheet_odds": "-146",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBGAME-26SEP192010NYYAZ-NYY",
+      "kalshi_side": "yes",
+      "price_cents": 58,
+      "count_fp": "1.29",
+      "actual_risk_dollars": 0.7482,
+      "order_id": "01a0b9a7-6718-71a8-a9e6-b05edd09eb37",
+      "simulated": false
+    },
+    "e44cba1d37cd1a56": {
+      "trade_id": "e44cba1d37cd1a56",
+      "date_placed": "2026-09-19T12:32:31.823292+00:00",
+      "play": "Nationals / Cardinals NRFI",
+      "sport": "MLB",
+      "market": "NRFI",
+      "sheet_odds": "-113",
+      "units": 1.5,
+      "kalshi_ticker": "KXMLBRFI-26SEP191915WSHSTL",
+      "kalshi_side": "no",
+      "price_cents": 51,
+      "count_fp": "1.47",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a0b9a7-6718-7795-8a8b-0085e81d9aa5",
       "simulated": false
     }
   }
