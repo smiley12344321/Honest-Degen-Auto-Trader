@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-20T14:53:17.103081+00:00",
+  "last_updated": "2026-09-20T17:59:50.623457+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1882,6 +1882,39 @@
       "count_fp": "1.56",
       "actual_risk_dollars": 0.9984,
       "order_id": "01a0bea0-1b98-74f6-8c5d-98d3526970a6",
+      "simulated": false
+    },
+    "1da6005d564d09ce": {
+      "trade_id": "1da6005d564d09ce",
+      "date_placed": "2026-09-20T17:59:50.414571+00:00",
+      "play": "Yankees F5 +0.5 & Padres F5 +0.5",
+      "sport": "MLB",
+      "market": "F5 Run Line Parlay",
+      "sheet_odds": "157",
+      "units": 1.5,
+      "kalshi_ticker": "KXMVECROSSCATEGORY-S20260BBA6C18B3A-F0B15214F9F",
+      "kalshi_side": "yes",
+      "price_cents": 36,
+      "count_fp": "1.92",
+      "actual_risk_dollars": 0.7488,
+      "order_id": "rfq_396f3189-4ed5-4e8a-b345-d9c2e8403580_6df381b1-b73f-4f68-86a7-2820f359f8c0",
+      "is_parlay": true,
+      "legs": [
+        {
+          "leg_description": "Yankees F5 +0.5",
+          "market_ticker": "KXMLBF5-26SEP201610NYYAZ-AZ",
+          "event_ticker": "KXMLBF5-26SEP201610NYYAZ",
+          "side": "no",
+          "market_title": "Arizona first 5 innings winner"
+        },
+        {
+          "leg_description": "Padres F5 +0.5",
+          "market_ticker": "KXMLBF5-26SEP201610MIASD-MIA",
+          "event_ticker": "KXMLBF5-26SEP201610MIASD",
+          "side": "no",
+          "market_title": "Miami first 5 innings winner"
+        }
+      ],
       "simulated": false
     }
   }
