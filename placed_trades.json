@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-09-20T06:16:57.438517+00:00",
+  "last_updated": "2026-09-20T11:42:39.829112+00:00",
   "trades": {
     "f6dfcd29ea2a5044": {
       "trade_id": "f6dfcd29ea2a5044",
@@ -1850,6 +1850,38 @@
           "market_title": "South Carolina wins by over 14.5 points"
         }
       ],
+      "simulated": false
+    },
+    "e7d282921f1cd89e": {
+      "trade_id": "e7d282921f1cd89e",
+      "date_placed": "2026-09-20T11:42:38.827981+00:00",
+      "play": "Steelers / Patriots Under 41.5",
+      "sport": "NFL",
+      "market": "Game Total",
+      "sheet_odds": "-110",
+      "units": 1.5,
+      "kalshi_ticker": "KXNFLTOTAL-26SEP20PITNE-42",
+      "kalshi_side": "no",
+      "price_cents": 51,
+      "count_fp": "1.47",
+      "actual_risk_dollars": 0.7497,
+      "order_id": "01a0bea0-17b0-74a7-9319-0a7e7d4d86cb",
+      "simulated": false
+    },
+    "1747337cdd1ede28": {
+      "trade_id": "1747337cdd1ede28",
+      "date_placed": "2026-09-20T11:42:39.543991+00:00",
+      "play": "Man City / Sunderland Under 3.5",
+      "sport": "Soccer",
+      "market": "Game Total",
+      "sheet_odds": "-160",
+      "units": 2.0,
+      "kalshi_ticker": "KXEPLTOTAL-26SEP20MCISUN-4",
+      "kalshi_side": "no",
+      "price_cents": 64,
+      "count_fp": "1.56",
+      "actual_risk_dollars": 0.9984,
+      "order_id": "01a0bea0-1b98-74f6-8c5d-98d3526970a6",
       "simulated": false
     }
   }
