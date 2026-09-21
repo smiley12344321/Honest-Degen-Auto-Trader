@@ -1,9 +1,10 @@
 name: Honest Degen Kalshi Auto Picker
 
 on:
-  schedule:
-    # Run every 15 minutes 24/7 (100% free on public repositories)
-    - cron: '*/15 * * * *'
+  # Temporarily disabled automated schedule (System turned off)
+  # schedule:
+  #   # Run every 15 minutes 24/7 (100% free on public repositories)
+  #   - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:

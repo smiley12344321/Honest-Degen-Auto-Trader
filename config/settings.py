@@ -24,6 +24,9 @@ if CONFIG_JSON_FILE.exists():
     except Exception as e:
         print(f"[settings.py] Warning reading config/settings.json: {e}")
 
+DEFAULT_SYSTEM_ENABLED = str(_file_config.get("system_enabled", True)).lower() in ("true", "1", "yes")
+SYSTEM_ENABLED = os.getenv("SYSTEM_ENABLED", str(DEFAULT_SYSTEM_ENABLED)).lower() in ("true", "1", "yes")
+
 DEFAULT_UNIT_SIZE_DOLLARS = float(_file_config.get("unit_size_dollars", 0.50))
 UNIT_SIZE_DOLLARS = float(os.getenv("UNIT_SIZE_DOLLARS", str(DEFAULT_UNIT_SIZE_DOLLARS)))
 

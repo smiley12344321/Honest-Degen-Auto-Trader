@@ -1,7 +1,7 @@
 import argparse
 import sys
 from src.trader import Trader
-from config.settings import KALSHI_ENV, UNIT_SIZE_DOLLARS, PRICE_SLIPPAGE_TOLERANCE_CENTS
+from config.settings import KALSHI_ENV, UNIT_SIZE_DOLLARS, PRICE_SLIPPAGE_TOLERANCE_CENTS, SYSTEM_ENABLED
 
 
 def main():
@@ -23,7 +23,21 @@ def main():
         default=None,
         help=f"Override max slippage tolerance in cents (default from settings: {PRICE_SLIPPAGE_TOLERANCE_CENTS}c)"
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force execution even if system_enabled is set to false in settings"
+    )
     args = parser.parse_args()
+
+    if not SYSTEM_ENABLED and not args.force:
+        print("==========================================================")
+        print("           HONEST DEGEN KALSHI AUTO PICKER                ")
+        print("==========================================================")
+        print("[SYSTEM DISABLED] Auto picker is temporarily turned off.")
+        print("Set 'system_enabled': true in config/settings.json or use --force to run.")
+        print("==========================================================")
+        sys.exit(0)
 
     effective_unit_size = args.unit_size if args.unit_size is not None else UNIT_SIZE_DOLLARS
     effective_slippage = args.slippage if args.slippage is not None else PRICE_SLIPPAGE_TOLERANCE_CENTS
