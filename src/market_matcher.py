@@ -42,6 +42,38 @@ class MarketMatcher:
         self.client = kalshi_client
         self.team_mappings = self._load_mappings(mappings_file)
 
+    SPORT_SERIES_MAP = {
+        "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBGAME", "KXMLBTOTAL", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLBKS", "KXMLBHIT", "KXMLBHR", "KXMLB"],
+        "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
+        "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
+        "BASEBALL": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBGAME", "KXMLBTOTAL", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLBKS", "KXMLBHIT", "KXMLBHR", "KXMLB", "KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD", "KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
+        "NPB&KBO": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD", "KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
+        "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
+        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL", "KXNFLPASSYDS", "KXNFLRSHYDS", "KXNFLRECYDS", "KXNFLTD", "KXNFLANYTD", "KXNFLPASSTDS", "KXNFLPASSCOMP", "KXNFLREC"],
+        "FOOTBALL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL", "KXNFLPASSYDS", "KXNFLRSHYDS", "KXNFLRECYDS", "KXNFLTD", "KXNFLANYTD", "KXNFLPASSTDS", "KXNFLPASSCOMP", "KXNFLREC", "KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
+        "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
+        "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
+        "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD", "KXWNBAPTS"],
+        "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD", "KXNBAPTS"],
+        "BASKETBALL": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD", "KXNBAPTS", "KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD", "KXWNBAPTS"],
+        "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
+    }
+
+    def _get_candidate_series_for_sport(self, sport: str) -> List[str]:
+        s = sport.upper().strip()
+        if s in self.SPORT_SERIES_MAP:
+            return self.SPORT_SERIES_MAP[s]
+        if "BASEBALL" in s or "KBO" in s or "NPB" in s:
+            return self.SPORT_SERIES_MAP["BASEBALL"]
+        if "FOOTBALL" in s or "NFL" in s or "CFB" in s or "NCAAF" in s:
+            return self.SPORT_SERIES_MAP["FOOTBALL"]
+        if "SOCCER" in s or "EPL" in s:
+            return self.SPORT_SERIES_MAP["SOCCER"]
+        if "BASKETBALL" in s or "NBA" in s or "WNBA" in s:
+            return self.SPORT_SERIES_MAP["BASKETBALL"]
+        return []
+
+
     @staticmethod
     def parse_pick_date(date_str: str) -> Optional[datetime.date]:
         """
@@ -157,7 +189,33 @@ class MarketMatcher:
         clean = raw_team_name.strip()
         sport_upper = sport.upper()
         
-        sport_map = self.team_mappings.get(sport_upper, {})
+        # Combine sub-sport mappings for umbrella or composite sport names
+        if sport_upper in ("BASEBALL", "NPB&KBO"):
+            sport_map = {}
+            for sub in ("MLB", "KBO", "NPB"):
+                sport_map.update(self.team_mappings.get(sub, {}))
+        elif sport_upper in ("FOOTBALL", "CFB", "COLLEGE FOOTBALL"):
+            sport_map = {}
+            for sub in ("NFL", "NCAAF"):
+                sport_map.update(self.team_mappings.get(sub, {}))
+        elif "SOCCER" in sport_upper or "WORLD CUP" in sport_upper:
+            sport_map = {}
+            for sub in ("SOCCER", "EPL"):
+                sport_map.update(self.team_mappings.get(sub, {}))
+        elif "BASKETBALL" in sport_upper:
+            sport_map = {}
+            for sub in ("NBA", "WNBA"):
+                sport_map.update(self.team_mappings.get(sub, {}))
+        else:
+            sport_map = self.team_mappings.get(sport_upper, {})
+
+        if not sport_map:
+            # Fallback across all sport dictionaries if sport was unrecognized
+            combined_all = {}
+            for sub_dict in self.team_mappings.values():
+                combined_all.update(sub_dict)
+            sport_map = combined_all
+
         if not sport_map:
             return clean
 
@@ -727,19 +785,7 @@ class MarketMatcher:
                 leg_res = self._match_single_pick(sub_pick, live_events)
                 if not leg_res.matched and self.client:
                     # Targeted sport series fallback for this leg
-                    sport_series_map = {
-                        "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBGAME", "KXMLBTOTAL", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLBKS", "KXMLBHIT", "KXMLBHR", "KXMLB"],
-                        "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
-                        "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
-                        "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
-                        "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL", "KXNFLPASSYDS", "KXNFLRSHYDS", "KXNFLRECYDS", "KXNFLTD", "KXNFLANYTD", "KXNFLPASSTDS", "KXNFLPASSCOMP", "KXNFLREC"],
-                        "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
-                        "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
-                        "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD", "KXWNBAPTS"],
-                        "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD", "KXNBAPTS"],
-                        "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
-                    }
-                    candidate_series = sport_series_map.get(pick.sport.upper(), [])
+                    candidate_series = self._get_candidate_series_for_sport(sub_pick.sport)
                     fallback_events = []
                     for st in candidate_series:
                         try:
@@ -778,19 +824,7 @@ class MarketMatcher:
 
         # If not matched in bulk events, execute targeted sport series fallback
         if self.client:
-            sport_series_map = {
-                "MLB": ["KXMLBTEAMTOTAL", "KXMLBSPREAD", "KXMLBTOTAL", "KXMLBGAME", "KXMLBF5", "KXMLBF5SPREAD", "KXMLBF5TOTAL", "KXMLBRFI", "KXMLBF3", "KXMLBF7", "KXMLBKS", "KXMLBHIT", "KXMLBHR", "KXMLB"],
-                "KBO": ["KXKBOTOTAL", "KXKBOGAME", "KXKBORFI"],
-                "NPB": ["KXNPBTOTAL", "KXNPBGAME", "KXNPBRFI", "KXNPBSPREAD"],
-                "NCAAF": ["KXNCAAFSPREAD", "KXNCAAFGAME", "KXNCAAFTOTAL", "KXNCAAFTEAMTOTAL", "KXNCAAF1HSPREAD", "KXNCAAF1HTOTAL", "KXNCAAF1H"],
-                "NFL": ["KXNFLSPREAD", "KXNFLGAME", "KXNFLTOTAL", "KXNFLTEAMTOTAL", "KXNFL1HSPREAD", "KXNFL1HTOTAL", "KXNFL1H", "KXNFL1HTEAMTOTAL", "KXNFL2HSPREAD", "KXNFL2HTOTAL", "KXNFLPASSYDS", "KXNFLRSHYDS", "KXNFLRECYDS", "KXNFLTD", "KXNFLANYTD", "KXNFLPASSTDS", "KXNFLPASSCOMP", "KXNFLREC"],
-                "SOCCER": ["KXLALIGATCORNERS", "KXLALIGAGAME", "KXLALIGACORNERS", "KXLALIGATOTAL", "KXLALIGABTTS", "KXLALIGASPREAD", "KXLALIGA", "KXUCLGAME", "KXUCLTOTAL", "KXUCLBTTS", "KXUCLCORNERS", "KXUCLTCORNERS", "KXSERIEAGAME", "KXSERIEATOTAL", "KXSERIEABTTS", "KXSERIEACORNERS", "KXSERIEATCORNERS", "KXBUNDESLIGAGAME", "KXBUNDESLIGATOTAL", "KXBUNDESLIGABTTS", "KXBUNDESLIGACORNERS", "KXBUNDESLIGATCORNERS", "KXMLSGAME", "KXMLSTOTAL", "KXMLSTCORNERS", "KXMLSCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLTCORNERS", "KXEPLCORNERS", "KXSOCCER"],
-                "EPL": ["KXEPLTCORNERS", "KXEPLGAME", "KXEPLTOTAL", "KXEPLBTTS", "KXEPLCORNERS", "KXEPLSPREAD", "KXEPL1H", "KXEPL2H", "KXEPLMATCH"],
-                "WNBA": ["KXWNBATEAMTOTAL", "KXWNBATOTAL", "KXWNBAGAME", "KXWNBASPREAD", "KXWNBAPTS"],
-                "NBA": ["KXNBATEAMTOTAL", "KXNBATOTAL", "KXNBAGAME", "KXNBASPREAD", "KXNBAPTS"],
-                "TENNIS": ["KXATPMATCH", "KXWTAMATCH", "KXUSOPEN", "KXUSOPENMENSINGLES", "KXUSOPENWOMENSINGLES"]
-            }
-            candidate_series = sport_series_map.get(pick.sport.upper(), [])
+            candidate_series = self._get_candidate_series_for_sport(pick.sport)
             fallback_events = []
             for st in candidate_series:
                 try:
@@ -985,10 +1019,14 @@ class MarketMatcher:
             # Sport-level prefix filter
             sport_prefixes = {
                 "MLB": ["KXMLB", "KXNRFI"],
+                "BASEBALL": ["KXMLB", "KXNRFI", "KXNPB", "KXKBO"],
+                "NPB&KBO": ["KXNPB", "KXKBO"],
                 "NFL": ["KXNFL"],
                 "NCAAF": ["KXNCAAF"],
+                "FOOTBALL": ["KXNFL", "KXNCAAF"],
                 "NBA": ["KXNBA"],
                 "WNBA": ["KXWNBA"],
+                "BASKETBALL": ["KXNBA", "KXWNBA"],
                 "NHL": ["KXNHL"],
                 "KBO": ["KXKBO"],
                 "NPB": ["KXNPB"],
@@ -997,23 +1035,47 @@ class MarketMatcher:
                 "TENNIS": ["KXATP", "KXWTA", "KXUSOPEN", "KXTENNIS"]
             }
             prefixes = sport_prefixes.get(sport_upper)
+            if not prefixes:
+                if "BASEBALL" in sport_upper:
+                    prefixes = sport_prefixes["BASEBALL"]
+                elif "FOOTBALL" in sport_upper:
+                    prefixes = sport_prefixes["FOOTBALL"]
+                elif "SOCCER" in sport_upper:
+                    prefixes = sport_prefixes["SOCCER"]
+                elif "BASKETBALL" in sport_upper:
+                    prefixes = sport_prefixes["BASKETBALL"]
+
             if prefixes and not any(event_ticker.upper().startswith(p) for p in prefixes):
                 continue
 
             sport_keywords = {
                 "MLB": ["mlb", "baseball", "nrfi", "rfi", "f5", "f3", "rbi", "home run", "strikeout", "run line"],
+                "BASEBALL": ["mlb", "baseball", "nrfi", "rfi", "f5", "f3", "rbi", "home run", "strikeout", "run line", "kbo", "npb", "japan", "korean"],
+                "NPB&KBO": ["kbo", "npb", "baseball", "japan", "japanese", "korean"],
                 "NPB": ["npb", "baseball", "japan", "japanese"],
                 "NBA": ["nba", "basketball"],
                 "WNBA": ["wnba", "basketball"],
+                "BASKETBALL": ["nba", "wnba", "basketball"],
                 "NHL": ["nhl", "hockey"],
                 "TENNIS": ["tennis", "atp", "wta", "us open", "wimbledon", "french open", "australian open"],
                 "NCAAF": ["ncaaf", "cfb", "college football", "football"],
                 "NFL": ["nfl", "football", "pro football"],
+                "FOOTBALL": ["nfl", "ncaaf", "cfb", "football", "pro football", "college football"],
                 "EPL": ["epl", "premier", "soccer", "football", "match"],
                 "KBO": ["kbo", "baseball", "korean"],
                 "SOCCER": ["soccer", "football", "epl", "uefa", "btts", "goals", "laliga", "seriea", "bundesliga", "corner", "corners"]
             }
             keywords = sport_keywords.get(sport_upper, [])
+            if not keywords:
+                if "BASEBALL" in sport_upper:
+                    keywords = sport_keywords["BASEBALL"]
+                elif "FOOTBALL" in sport_upper:
+                    keywords = sport_keywords["FOOTBALL"]
+                elif "SOCCER" in sport_upper:
+                    keywords = sport_keywords["SOCCER"]
+                elif "BASKETBALL" in sport_upper:
+                    keywords = sport_keywords["BASKETBALL"]
+
             if keywords and not any(k in event_ticker or k in event_title for k in keywords):
                 if not any(t.lower() in event_ticker or t.lower() in event_title for t in norm_teams if len(t) >= 2):
                     continue

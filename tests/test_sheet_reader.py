@@ -4,8 +4,11 @@ from src.sheet_reader import (
     generate_trade_id,
     parse_units,
     PickRecord,
-    get_active_picks
+    get_active_picks,
+    parse_pick_date
 )
+import datetime
+from unittest.mock import patch
 
 SAMPLE_CSV = """Day,Date,Sport,Play,Market,Odds,Grade,Units,Risk $,Result,close,P/L Units,P/L $,Notes
 1,5/17/2026,MLB,Rangers F5 -0.5,F5 Spread,+106,A-,2.50,"1,250.00",Win,,2.65,"1,325.00",Eovaldi edge
@@ -77,3 +80,27 @@ class TestSheetReader:
         for p in active_picks:
             assert p.is_active is True
             assert p.play != ""
+
+    def test_parse_pick_date(self):
+        d1 = parse_pick_date("9/17/2026")
+        assert d1 == datetime.date(2026, 9, 17)
+        d2 = parse_pick_date("2026-09-18")
+        assert d2 == datetime.date(2026, 9, 18)
+        d3 = parse_pick_date("9/17/26")
+        assert d3 == datetime.date(2026, 9, 17)
+        assert parse_pick_date("") is None
+
+    def test_active_picks_not_dropped_by_day_counter(self):
+        today_str = datetime.date.today().strftime("%m/%d/%Y")
+        # Simulate 11 picks on the same day where Day counter spans 193 to 203
+        rows = ["Day,Date,Sport,Play,Market,Odds,Grade,Units,Risk $,Result,close,P/L Units,P/L $,Notes"]
+        for day_num in range(193, 204):
+            rows.append(f'{day_num},{today_str},Baseball,Team {day_num} ML,Moneyline,-110,A,1.0,,pending,,,,notes')
+        mock_csv = "\n".join(rows)
+
+        with patch("src.sheet_reader.fetch_sheet_csv", return_value=mock_csv):
+            active = get_active_picks(max_age_days=3)
+            # Under the old day-counter logic, picks where (203 - day_num) > 3 were dropped (only 4 kept).
+            # Under calendar date filtering, all 11 picks must be retained.
+            assert len(active) == 11
+

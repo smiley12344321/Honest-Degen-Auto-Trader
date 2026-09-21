@@ -56,6 +56,12 @@ class TestMarketMatcher:
         assert matcher.normalize_team("MLB", "TB Rays") == "TB"
         assert matcher.normalize_team("WNBA", "Dallas Wings") == "DAL"
         assert matcher.normalize_team("NHL", "Canadiens") == "MTL"
+        # Umbrella and composite sports
+        assert matcher.normalize_team("Baseball", "KIA Tigers") == "KIA"
+        assert matcher.normalize_team("Baseball", "SoftBank Hawks") == "HAWKS"
+        assert matcher.normalize_team("NPB&KBO", "KIA Tigers") == "KIA"
+        assert matcher.normalize_team("Football", "Bills") == "BUF"
+        assert matcher.normalize_team("Football", "Ohio State") == "OHIOST"
 
     def test_extract_teams_from_play(self, matcher):
         assert matcher.extract_teams_from_play("Rays ML", "MLB") == ["Rays"]

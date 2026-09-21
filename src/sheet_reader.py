@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import io
 import re
@@ -164,10 +165,39 @@ def parse_picks_from_csv(csv_text: str) -> List[PickRecord]:
     return records
 
 
+def parse_pick_date(date_str: str) -> Optional[datetime.date]:
+    """
+    Parses a date string from the picks sheet into a datetime.date object.
+    Supports M/D/YYYY, M/D/YY, M/D, YYYY-MM-DD, etc.
+    """
+    if not date_str:
+        return None
+    date_str = date_str.strip()
+    parts = [p for p in re.split(r"[/.-]", date_str) if p.isdigit()]
+    if len(parts) >= 2:
+        try:
+            m = int(parts[0])
+            d = int(parts[1])
+            if len(parts) >= 3:
+                y = int(parts[2])
+                if y < 100:
+                    y += 2000
+            else:
+                y = datetime.date.today().year
+            return datetime.date(y, m, d)
+        except Exception:
+            pass
+    try:
+        return datetime.date.fromisoformat(date_str)
+    except Exception:
+        pass
+    return None
+
+
 def get_active_picks(url: str = SHEET_CSV_URL, max_age_days: int = 3) -> List[PickRecord]:
     """
-    Convenience function: fetches CSV and returns only active/pending picks
-    from the current or recent slate (within max_age_days of the latest entry).
+    Fetches CSV and returns only active/pending picks from the current or recent slate
+    (games scheduled for today, in the future, or within max_age_days calendar days).
     """
     csv_text = fetch_sheet_csv(url)
     all_picks = parse_picks_from_csv(csv_text)
@@ -176,17 +206,20 @@ def get_active_picks(url: str = SHEET_CSV_URL, max_age_days: int = 3) -> List[Pi
     if not active_unfiltered:
         return []
 
-    # Find the most recent day number / date to prevent stale 'pending' rows from months ago
-    def extract_day_num(p: PickRecord) -> int:
-        try:
-            return int(re.search(r"\d+", p.day).group(0))
-        except Exception:
-            return 0
+    today = datetime.date.today()
+    cutoff_date = today - datetime.timedelta(days=max_age_days)
 
-    max_day = max((extract_day_num(p) for p in all_picks if p.day), default=0)
-    
-    if max_day > 0:
-        # Only return active picks within max_age_days of the latest day in the sheet
-        return [p for p in active_unfiltered if (max_day - extract_day_num(p)) <= max_age_days]
+    filtered = []
+    for pick in active_unfiltered:
+        p_date = parse_pick_date(pick.date)
+        if p_date:
+            # Keep if game is today, in the future, or within the last max_age_days
+            if p_date >= cutoff_date:
+                filtered.append(pick)
+        else:
+            # If date couldn't be parsed, retain if among the recent rows of the sheet
+            if pick in all_picks[-30:]:
+                filtered.append(pick)
 
-    return active_unfiltered
+    return filtered
+
